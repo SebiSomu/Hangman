@@ -378,7 +378,8 @@ namespace Hangman.ViewModels
         public void SaveGame()
         {
             string saveName = $"Save {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
-            _gameService.SaveGame(GameState, saveName);
+            var saveId = _gameService.SaveGame(GameState, saveName);
+            GameState.SaveId = saveId;
             MessageBox.Show($"Game saved successfully as '{saveName}'!", "Save Game",
                 MessageBoxButton.OK, MessageBoxImage.Information);
         }

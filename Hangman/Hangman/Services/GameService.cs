@@ -197,12 +197,31 @@ namespace Hangman.Services
             return allWords[_random.Next(allWords.Count)];
         }
 
-        public void SaveGame(GameState gameState, string? saveName = null)
+        public Guid SaveGame(GameState gameState, string? saveName = null)
         {
             var savedGames = LoadAllSavedGames();
-            
+
+            if (gameState.SaveId.HasValue)
+            {
+                var existingSave = savedGames.FirstOrDefault(g => g.SaveId == gameState.SaveId.Value);
+                if (existingSave != null)
+                {
+                    existingSave.CurrentWord = gameState.CurrentWord;
+                    existingSave.GuessedLetters = gameState.GuessedLetters;
+                    existingSave.WrongGuesses = gameState.WrongGuesses;
+                    existingSave.CurrentLevel = gameState.CurrentLevel;
+                    existingSave.TimeRemaining = gameState.TimeRemaining;
+                    existingSave.SavedAt = DateTime.Now;
+
+                    var json = JsonSerializer.Serialize(savedGames, new JsonSerializerOptions { WriteIndented = true });
+                    File.WriteAllText(_saveGamesPath, json);
+                    return gameState.SaveId.Value;
+                }
+            }
+
             var saveData = new GameSaveData
             {
+                SaveId = Guid.NewGuid(),
                 Username = gameState.Username,
                 SaveName = saveName ?? $"Save {savedGames.Count(g => g.Username == gameState.Username) + 1}",
                 CurrentWord = gameState.CurrentWord,
@@ -216,8 +235,9 @@ namespace Hangman.Services
 
             savedGames.Add(saveData);
 
-            var json = JsonSerializer.Serialize(savedGames, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(_saveGamesPath, json);
+            var jsonNew = JsonSerializer.Serialize(savedGames, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(_saveGamesPath, jsonNew);
+            return saveData.SaveId;
         }
 
         public GameSaveData? LoadSavedGame(Guid saveId)
