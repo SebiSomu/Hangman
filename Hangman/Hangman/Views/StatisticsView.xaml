@@ -1,0 +1,206 @@
+<UserControl x:Class="Hangman.Views.StatisticsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800">
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="PrimaryColor" Color="#6366F1"/>
+        <SolidColorBrush x:Key="BackgroundSubtleColor" Color="#F3F4F6"/>
+        <SolidColorBrush x:Key="TextPrimaryColor" Color="#111827"/>
+        <SolidColorBrush x:Key="TextSecondaryColor" Color="#6B7280"/>
+        <SolidColorBrush x:Key="SuccessColor" Color="#10B981"/>
+        <SolidColorBrush x:Key="ErrorColor" Color="#EF4444"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#E5E7EB"/>
+
+        <Style x:Key="BackButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource BackgroundSubtleColor}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryColor}"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource BorderColor}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="White">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="40">
+                <!-- Header -->
+                <Grid Margin="0,0,0,30">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Button Grid.Column="0" 
+                            Style="{StaticResource BackButton}"
+                            Content="← Back"
+                            Command="{Binding BackCommand}"
+                            Width="100"/>
+                    
+                    <TextBlock Grid.Column="1" 
+                               Text="Game Statistics — All Players" 
+                               FontSize="28" FontWeight="Bold" 
+                               Foreground="{StaticResource PrimaryColor}"
+                               HorizontalAlignment="Center"
+                               Margin="-100,0,0,0"/>
+                </Grid>
+
+                <!-- All Users Statistics -->
+                <ItemsControl ItemsSource="{Binding AllUserStats}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{StaticResource BackgroundSubtleColor}" 
+                                    CornerRadius="12"
+                                    Padding="24"
+                                    Margin="0,0,0,20">
+                                <StackPanel>
+                                    <!-- User Header -->
+                                    <TextBlock FontSize="20" FontWeight="Bold"
+                                               Foreground="{StaticResource PrimaryColor}"
+                                               Margin="0,0,0,15">
+                                        <Run Text="👤 "/>
+                                        <Run Text="{Binding Username, Mode=OneWay}"/>
+                                    </TextBlock>
+
+                                    <!-- Stats Grid -->
+                                    <UniformGrid Columns="4" Margin="0,0,0,15">
+                                        <!-- Total -->
+                                        <Border Background="White" CornerRadius="8" Padding="16" Margin="4"
+                                                BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
+                                            <StackPanel HorizontalAlignment="Center">
+                                                <TextBlock Text="🎮" FontSize="20" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding TotalGamesPlayed}" 
+                                                           FontSize="28" FontWeight="Bold"
+                                                           Foreground="{StaticResource PrimaryColor}"
+                                                           HorizontalAlignment="Center"/>
+                                                <TextBlock Text="Total Games" FontSize="12"
+                                                           Foreground="{StaticResource TextSecondaryColor}"
+                                                           HorizontalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <!-- Won -->
+                                        <Border Background="White" CornerRadius="8" Padding="16" Margin="4"
+                                                BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
+                                            <StackPanel HorizontalAlignment="Center">
+                                                <TextBlock Text="🏆" FontSize="20" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding GamesWon}" 
+                                                           FontSize="28" FontWeight="Bold"
+                                                           Foreground="{StaticResource SuccessColor}"
+                                                           HorizontalAlignment="Center"/>
+                                                <TextBlock Text="Won" FontSize="12"
+                                                           Foreground="{StaticResource TextSecondaryColor}"
+                                                           HorizontalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <!-- Lost -->
+                                        <Border Background="White" CornerRadius="8" Padding="16" Margin="4"
+                                                BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
+                                            <StackPanel HorizontalAlignment="Center">
+                                                <TextBlock Text="❌" FontSize="20" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding GamesLost}" 
+                                                           FontSize="28" FontWeight="Bold"
+                                                           Foreground="{StaticResource ErrorColor}"
+                                                           HorizontalAlignment="Center"/>
+                                                <TextBlock Text="Lost" FontSize="12"
+                                                           Foreground="{StaticResource TextSecondaryColor}"
+                                                           HorizontalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <!-- Win Rate -->
+                                        <Border Background="White" CornerRadius="8" Padding="16" Margin="4"
+                                                BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
+                                            <StackPanel HorizontalAlignment="Center">
+                                                <TextBlock Text="📊" FontSize="20" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding WinRateDisplay}" 
+                                                           FontSize="28" FontWeight="Bold"
+                                                           Foreground="{StaticResource PrimaryColor}"
+                                                           HorizontalAlignment="Center"/>
+                                                <TextBlock Text="Win Rate" FontSize="12"
+                                                           Foreground="{StaticResource TextSecondaryColor}"
+                                                           HorizontalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
+
+                                    <!-- Category Stats -->
+                                    <ItemsControl ItemsSource="{Binding CategoryStatistics}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="White" 
+                                                        CornerRadius="8" Padding="12" Margin="0,0,0,6"
+                                                        BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        
+                                                        <TextBlock Grid.Column="0" Text="{Binding Category}" 
+                                                                   FontSize="14" FontWeight="SemiBold"
+                                                                   Foreground="{StaticResource TextPrimaryColor}"/>
+                                                        <TextBlock Grid.Column="1" 
+                                                                   Text="{Binding GamesPlayed, StringFormat='Played: {0}'}" 
+                                                                   FontSize="13" Foreground="{StaticResource TextSecondaryColor}"
+                                                                   Margin="0,0,20,0"/>
+                                                        <TextBlock Grid.Column="2" 
+                                                                   Text="{Binding GamesWon, StringFormat='Won: {0}'}" 
+                                                                   FontSize="13" Foreground="{StaticResource SuccessColor}"
+                                                                   Margin="0,0,20,0"/>
+                                                        <TextBlock Grid.Column="3" 
+                                                                   Text="{Binding BestLevel, StringFormat='Best Level: {0}'}" 
+                                                                   FontSize="13" Foreground="{StaticResource PrimaryColor}"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- No Data Message -->
+                <TextBlock Text="No games played yet! Start playing to see statistics." 
+                           FontSize="16"
+                           Foreground="{StaticResource TextSecondaryColor}"
+                           HorizontalAlignment="Center"
+                           Margin="0,20,0,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasData}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

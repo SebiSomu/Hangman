@@ -1,0 +1,231 @@
+<UserControl x:Class="Hangman.Views.GameView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:converters="clr-namespace:Hangman.Converters"
+             xmlns:controls="clr-namespace:Hangman.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="900"
+             Focusable="True"
+             PreviewKeyDown="UserControl_PreviewKeyDown"
+             Loaded="UserControl_Loaded"
+             Background="White">
+    
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:StringToNullVisibilityConverter x:Key="StringToNullVisibilityConverter"/>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <SolidColorBrush x:Key="PrimaryColor" Color="#6366F1"/>
+        <SolidColorBrush x:Key="TextPrimaryColor" Color="#1F2937"/>
+        <SolidColorBrush x:Key="TextSecondaryColor" Color="#6B7280"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#E5E7EB"/>
+        <SolidColorBrush x:Key="BackgroundSubtleColor" Color="#F9FAFB"/>
+    </UserControl.Resources>
+
+    <Grid Margin="20,10,20,10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Row 0: Header: User info + Game info -->
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- User Avatar -->
+            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20"
+                    Background="{StaticResource PrimaryColor}" Margin="0,0,10,0">
+                <Grid>
+                    <TextBlock Text="👤" FontSize="18"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Visibility="{Binding PlayerAvatarFileName, Converter={StaticResource StringToNullVisibilityConverter}}"/>
+                    <Ellipse Width="38" Height="38"
+                             Visibility="{Binding PlayerAvatarFileName, Converter={StaticResource StringToVisibilityConverter}}">
+                        <Ellipse.Fill>
+                            <ImageBrush ImageSource="{Binding PlayerAvatarImage}" Stretch="UniformToFill"/>
+                        </Ellipse.Fill>
+                    </Ellipse>
+                </Grid>
+            </Border>
+
+            <!-- Username -->
+            <TextBlock Grid.Column="1" 
+                       Text="{Binding PlayerName}" 
+                       FontSize="16" FontWeight="SemiBold"
+                       Foreground="{StaticResource PrimaryColor}"
+                       VerticalAlignment="Center"/>
+
+            <!-- Category -->
+            <TextBlock Grid.Column="3" 
+                       Text="{Binding CategoryDisplay}" 
+                       FontSize="13" FontWeight="SemiBold"
+                       Foreground="{StaticResource TextSecondaryColor}"
+                       VerticalAlignment="Center"
+                       Margin="0,0,15,0"/>
+
+            <!-- Level -->
+            <TextBlock Grid.Column="4" 
+                       Text="{Binding LevelDisplay}" 
+                       FontSize="13" FontWeight="SemiBold"
+                       Foreground="{StaticResource PrimaryColor}"
+                       VerticalAlignment="Center"
+                       Margin="0,0,15,0"/>
+
+            <!-- Timer -->
+            <TextBlock Grid.Column="5" 
+                       Text="{Binding TimerDisplay}" 
+                       FontSize="14" FontWeight="Bold"
+                       Foreground="{StaticResource TextPrimaryColor}"
+                       VerticalAlignment="Center"/>
+        </Grid>
+
+        <!-- Row 1: Hangman Drawing -->
+        <Border Grid.Row="1" 
+                Background="{StaticResource BackgroundSubtleColor}"
+                CornerRadius="12"
+                Padding="20"
+                Margin="0,0,0,10"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+            <controls:HangmanDrawing WrongGuesses="{Binding GameState.WrongGuesses}"/>
+        </Border>
+
+        <!-- Row 2: Word Display -->
+        <Border Grid.Row="2" 
+                Background="{StaticResource BackgroundSubtleColor}" 
+                CornerRadius="12"
+                Padding="25,12"
+                Margin="0,0,0,8"
+                HorizontalAlignment="Center">
+            <TextBlock Text="{Binding MaskedWord}" 
+                       FontSize="32" 
+                       FontWeight="Bold"
+                       Foreground="{StaticResource TextPrimaryColor}"
+                       HorizontalAlignment="Center"
+                       FontFamily="Consolas"/>
+        </Border>
+
+        <!-- Row 3: Feedback Message (between word and buttons, always visible area) -->
+        <Border Grid.Row="3" 
+                Background="{Binding FeedbackColor}"
+                CornerRadius="8"
+                Padding="15,8"
+                Margin="0,0,0,8"
+                HorizontalAlignment="Center"
+                MinWidth="350"
+                MinHeight="36"
+                Visibility="{Binding ShowFeedback, Converter={StaticResource BoolToVisibilityConverter}}">
+            <TextBlock Text="{Binding FeedbackMessage}" 
+                       FontSize="15" 
+                       FontWeight="Bold"
+                       Foreground="White"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"/>
+        </Border>
+
+        <!-- Row 4: Letter Buttons A-Z -->
+        <Border Grid.Row="4" 
+                Background="{StaticResource BackgroundSubtleColor}"
+                CornerRadius="12"
+                Padding="12"
+                Margin="0,0,0,8"
+                HorizontalAlignment="Center">
+            <ItemsControl ItemsSource="{Binding LetterButtons}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel HorizontalAlignment="Center" MaxWidth="600"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Width="42" Height="42"
+                                Content="{Binding Letter}"
+                                Command="{Binding DataContext.LetterClickCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                CommandParameter="{Binding Letter}"
+                                FontSize="16" FontWeight="Bold"
+                                Margin="3"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Cursor="Hand">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="{StaticResource PrimaryColor}"/>
+                                    <Setter Property="IsEnabled" Value="True"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="ButtonBorder"
+                                                        Background="{TemplateBinding Background}" 
+                                                        CornerRadius="8">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsEnabled" Value="False">
+                                                        <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.2"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="ButtonBorder" Property="Background">
+                                                            <Setter.Value>
+                                                                <SolidColorBrush Color="#4F46E5"/>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsUsed}" Value="True">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+
+        <!-- Row 5: Action Buttons -->
+        <StackPanel Grid.Row="5" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,5">
+            <Button Content="💾 Save Game" 
+                    Command="{Binding SaveGameCommand}"
+                    Height="36" Padding="16,0" FontSize="13" FontWeight="SemiBold"
+                    Background="{StaticResource PrimaryColor}" Foreground="White"
+                    BorderThickness="0" Margin="5,0" Cursor="Hand">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="8"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+            <Button Content="Exit" 
+                    Command="{Binding ExitGameCommand}"
+                    Height="36" Padding="16,0" FontSize="13" FontWeight="SemiBold"
+                    Background="{StaticResource BorderColor}" Foreground="{StaticResource TextPrimaryColor}"
+                    BorderThickness="0" Margin="5,0" Cursor="Hand">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="8"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>
