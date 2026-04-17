@@ -3,7 +3,7 @@ using System.Windows.Media.Imaging;
 
 namespace Hangman.Services
 {
-    public class AvatarService
+    public class AvatarService : IAvatarService
     {
         private readonly string _avatarsFolder;
         private readonly Dictionary<string, BitmapImage> _imageCache;

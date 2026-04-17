@@ -9,8 +9,8 @@ namespace Hangman.ViewModels
 {
     public class PlayerSettingsViewModel : ViewModelBase
     {
-        private readonly UserService _userService;
-        private readonly AvatarService _avatarService;
+        private readonly IUserService _userService;
+        private readonly IAvatarService _avatarService;
         private User _currentUser;
         private string? _avatarFileName;
         private BitmapImage? _avatarImage;
@@ -47,7 +47,7 @@ namespace Hangman.ViewModels
         public event EventHandler? SettingsSaved;
         public event EventHandler? BackRequested;
 
-        public PlayerSettingsViewModel(User currentUser, UserService userService, AvatarService avatarService)
+        public PlayerSettingsViewModel(User currentUser, IUserService userService, IAvatarService avatarService)
         {
             _currentUser = currentUser;
             _userService = userService;
@@ -86,24 +86,7 @@ namespace Hangman.ViewModels
         private void SaveSettings()
         {
             CurrentUser.AvatarFileName = AvatarFileName;
-
-            // Update user in storage
-            var allUsers = _userService.GetAllUsers();
-            var userToUpdate = allUsers.FirstOrDefault(u => u.Username == CurrentUser.Username);
-            if (userToUpdate != null)
-            {
-                userToUpdate.AvatarFileName = AvatarFileName;
-                // Re-serialize all users
-                var tempFile = Path.GetTempFileName();
-                File.WriteAllText(tempFile, System.Text.Json.JsonSerializer.Serialize(allUsers, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
-                var usersFile = "users.json";
-                if (File.Exists(usersFile))
-                {
-                    File.Delete(usersFile);
-                }
-                File.Move(tempFile, usersFile);
-            }
-            
+            _userService.UpdateUser(CurrentUser);
             SettingsSaved?.Invoke(this, EventArgs.Empty);
         }
     }

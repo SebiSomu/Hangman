@@ -1,7 +1,3 @@
- using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
 using Hangman.Models;
 using Hangman.Services;
 
@@ -15,12 +11,12 @@ namespace Hangman.ViewModels
         public int GamesLost { get; set; }
         public double WinRate { get; set; }
         public string WinRateDisplay => $"{WinRate:F1}%";
-        public List<GameService.CategoryStats> CategoryStatistics { get; set; } = new();
+        public List<CategoryStats> CategoryStatistics { get; set; } = new();
     }
 
     public class StatisticsViewModel : ViewModelBase
     {
-        private readonly GameService _gameService;
+        private readonly IStatisticsService _statisticsService;
 
         public List<UserStatisticsItem> AllUserStats { get; private set; } = new();
         public bool HasData => AllUserStats.Count > 0;
@@ -29,9 +25,9 @@ namespace Hangman.ViewModels
 
         public event EventHandler? BackRequested;
 
-        public StatisticsViewModel(GameService gameService)
+        public StatisticsViewModel(IStatisticsService statisticsService)
         {
-            _gameService = gameService;
+            _statisticsService = statisticsService;
             LoadAllStatistics();
             BackCommand = new RelayCommand(_ => BackRequested?.Invoke(this, EventArgs.Empty));
         }
@@ -40,37 +36,22 @@ namespace Hangman.ViewModels
         {
             AllUserStats = new List<UserStatisticsItem>();
 
-            var statsFile = "gamestats.json";
+            var allStats = _statisticsService.GetAllStatistics();
 
-            if (!File.Exists(statsFile))
+            foreach (var kvp in allStats)
             {
-                statsFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "gamestats.json");
-            }
-
-            if (File.Exists(statsFile))
-            {
-                var json = File.ReadAllText(statsFile);
-                var allStats = JsonSerializer.Deserialize<Dictionary<string, GameService.UserStats>>(json);
-
-                if (allStats != null)
+                var userStats = kvp.Value;
+                AllUserStats.Add(new UserStatisticsItem
                 {
-                    foreach (var kvp in allStats)
-                    {
-                        var userStats = kvp.Value;
-                        var item = new UserStatisticsItem
-                        {
-                            Username = kvp.Key,
-                            TotalGamesPlayed = userStats.TotalGamesPlayed,
-                            GamesWon = userStats.GamesWon,
-                            GamesLost = userStats.GamesLost,
-                            WinRate = userStats.TotalGamesPlayed > 0
-                                ? (double)userStats.GamesWon / userStats.TotalGamesPlayed * 100
-                                : 0,
-                            CategoryStatistics = userStats.CategoryStats ?? new List<GameService.CategoryStats>()
-                        };
-                        AllUserStats.Add(item);
-                    }
-                }
+                    Username = kvp.Key,
+                    TotalGamesPlayed = userStats.TotalGamesPlayed,
+                    GamesWon = userStats.GamesWon,
+                    GamesLost = userStats.GamesLost,
+                    WinRate = userStats.TotalGamesPlayed > 0
+                        ? (double)userStats.GamesWon / userStats.TotalGamesPlayed * 100
+                        : 0,
+                    CategoryStatistics = userStats.CategoryStats ?? new List<CategoryStats>()
+                });
             }
 
             OnPropertyChanged(nameof(AllUserStats));

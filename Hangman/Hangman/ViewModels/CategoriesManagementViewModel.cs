@@ -5,13 +5,21 @@ using Hangman.Services;
 
 namespace Hangman.ViewModels
 {
+    /// <summary>
+    /// ViewModel for category and word management.
+    ///
+    /// ISP after refactoring: depends on IWordService only — the narrowest contract
+    /// that covers everything this screen needs.
+    /// </summary>
     public class CategoriesManagementViewModel : ViewModelBase
     {
-        private readonly GameService _gameService;
+        private readonly IWordRepository _wordRepository;
         private ObservableCollection<CategoryViewModel> _categories;
         private CategoryViewModel? _selectedCategory;
         private string _newCategoryName = string.Empty;
         private string _newWord = string.Empty;
+
+        // ── Bindable collections & properties ────────────────────────────────
 
         public ObservableCollection<CategoryViewModel> Categories
         {
@@ -39,9 +47,7 @@ namespace Hangman.ViewModels
             set
             {
                 if (SetProperty(ref _newCategoryName, value))
-                {
                     OnPropertyChanged(nameof(CanAddCategory));
-                }
             }
         }
 
@@ -51,9 +57,7 @@ namespace Hangman.ViewModels
             set
             {
                 if (SetProperty(ref _newWord, value))
-                {
                     OnPropertyChanged(nameof(CanAddWord));
-                }
             }
         }
 
@@ -62,6 +66,7 @@ namespace Hangman.ViewModels
         public bool CanAddWord => SelectedCategory != null && !string.IsNullOrWhiteSpace(NewWord);
         public bool CanDeleteWord => SelectedCategory != null && SelectedCategory.SelectedWord != null;
 
+        // ── Commands ─────────────────────────────────────────────────────────
         public ICommand AddCategoryCommand { get; }
         public ICommand DeleteCategoryCommand { get; }
         public ICommand AddWordCommand { get; }
@@ -70,9 +75,9 @@ namespace Hangman.ViewModels
 
         public event EventHandler? BackRequested;
 
-        public CategoriesManagementViewModel(GameService gameService)
+        public CategoriesManagementViewModel(IWordRepository wordRepository)
         {
-            _gameService = gameService;
+            _wordRepository = wordRepository;
             _categories = new ObservableCollection<CategoryViewModel>();
 
             AddCategoryCommand = new RelayCommand(_ => AddCategory(), _ => CanAddCategory);
@@ -84,13 +89,14 @@ namespace Hangman.ViewModels
             LoadCategories();
         }
 
+        // ── Private methods ──────────────────────────────────────────────────
+
         private void LoadCategories()
         {
             Categories.Clear();
-            var categoryNames = _gameService.GetAllCategoryNames();
-            foreach (var name in categoryNames)
+            foreach (var name in _wordRepository.GetAllCategoryNames())
             {
-                var words = _gameService.GetWordsForCategory(name);
+                var words = _wordRepository.GetWordsForCategory(name);
                 Categories.Add(new CategoryViewModel(name, words));
             }
         }
@@ -98,14 +104,15 @@ namespace Hangman.ViewModels
         private void AddCategory()
         {
             var name = NewCategoryName.Trim().ToUpper();
-            if (_gameService.AddCategory(name))
+            if (_wordRepository.AddCategory(name))
             {
                 Categories.Add(new CategoryViewModel(name, new List<string>()));
                 NewCategoryName = string.Empty;
             }
             else
             {
-                System.Windows.MessageBox.Show("Category already exists!", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("Category already exists!", "Error",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             }
         }
 
@@ -121,7 +128,7 @@ namespace Hangman.ViewModels
 
             if (result == System.Windows.MessageBoxResult.Yes)
             {
-                _gameService.DeleteCategory(SelectedCategory.Name);
+                _wordRepository.DeleteCategory(SelectedCategory.Name);
                 Categories.Remove(SelectedCategory);
                 SelectedCategory = null;
             }
@@ -132,26 +139,28 @@ namespace Hangman.ViewModels
             if (SelectedCategory == null) return;
 
             var word = NewWord.Trim().ToUpper();
-            if (_gameService.AddWordToCategory(SelectedCategory.Name, word))
+            if (_wordRepository.AddWordToCategory(SelectedCategory.Name, word))
             {
                 SelectedCategory.Words.Add(word);
                 NewWord = string.Empty;
             }
             else
             {
-                System.Windows.MessageBox.Show("Word already exists in this category!", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                System.Windows.MessageBox.Show("Word already exists in this category!", "Error",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             }
         }
 
         private void DeleteWord()
         {
             if (SelectedCategory?.SelectedWord == null) return;
-
-            _gameService.DeleteWordFromCategory(SelectedCategory.Name, SelectedCategory.SelectedWord);
+            _wordRepository.DeleteWordFromCategory(SelectedCategory.Name, SelectedCategory.SelectedWord);
             SelectedCategory.Words.Remove(SelectedCategory.SelectedWord);
             SelectedCategory.SelectedWord = null;
         }
     }
+
+    // ── Supporting ViewModel ─────────────────────────────────────────────────
 
     public class CategoryViewModel : ViewModelBase
     {

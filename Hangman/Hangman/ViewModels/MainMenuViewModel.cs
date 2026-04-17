@@ -7,9 +7,10 @@ namespace Hangman.ViewModels
 {
     public class MainMenuViewModel : ViewModelBase
     {
-        private readonly UserService _userService;
-        private readonly GameService _gameService;
-        private readonly AvatarService _avatarService;
+        private readonly IUserService _userService;
+        private readonly ISaveGameService _saveGameService;
+        private readonly IStatisticsService _statisticsService;
+        private readonly IAvatarService _avatarService;
         private User _currentUser;
 
         public User CurrentUser
@@ -22,6 +23,7 @@ namespace Hangman.ViewModels
         public string? AvatarFileName => CurrentUser.AvatarFileName;
         public BitmapImage? AvatarImage => _avatarService.GetAvatarImage(CurrentUser.AvatarFileName);
 
+        // ── Commands ─────────────────────────────────────────────────────────
         public ICommand NewGameCommand { get; }
         public ICommand ContinueGameCommand { get; }
         public ICommand StatisticsCommand { get; }
@@ -29,17 +31,24 @@ namespace Hangman.ViewModels
         public ICommand DeleteAccountCommand { get; }
         public ICommand LogoutCommand { get; }
 
+        // ── Events ────────────────────────────────────────────────────────────
         public event EventHandler? LogoutRequested;
         public event EventHandler? NewGameRequested;
         public event EventHandler? ContinueGameRequested;
         public event EventHandler? StatisticsRequested;
         public event EventHandler? PlayerSettingsRequested;
 
-        public MainMenuViewModel(User currentUser, UserService userService, GameService gameService, AvatarService avatarService)
+        public MainMenuViewModel(
+            User currentUser,
+            IUserService userService,
+            ISaveGameService saveGameService,
+            IStatisticsService statisticsService,
+            IAvatarService avatarService)
         {
             _currentUser = currentUser;
             _userService = userService;
-            _gameService = gameService;
+            _saveGameService = saveGameService;
+            _statisticsService = statisticsService;
             _avatarService = avatarService;
 
             NewGameCommand = new RelayCommand(_ => NewGameRequested?.Invoke(this, EventArgs.Empty));
@@ -60,8 +69,8 @@ namespace Hangman.ViewModels
 
             if (result == System.Windows.MessageBoxResult.Yes)
             {
-                _gameService.DeleteAllSavedGamesForUser(CurrentUser.Username);
-                _gameService.DeleteUserStatistics(CurrentUser.Username);
+                _saveGameService.DeleteAllSavedGamesForUser(CurrentUser.Username);
+                _statisticsService.DeleteUserStatistics(CurrentUser.Username);
                 _userService.DeleteUser(CurrentUser.Username);
                 System.Windows.MessageBox.Show("Account deleted successfully!");
                 LogoutRequested?.Invoke(this, EventArgs.Empty);

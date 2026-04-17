@@ -9,8 +9,8 @@ namespace Hangman.ViewModels
 {
     public class SignUpViewModel : ViewModelBase
     {
-        private readonly UserService _userService;
-        private readonly AvatarService _avatarService;
+        private readonly IUserService _userService;
+        private readonly IAvatarService _avatarService;
         private string _username = string.Empty;
         private string _password = string.Empty;
         private string _confirmPassword = string.Empty;
@@ -79,7 +79,7 @@ namespace Hangman.ViewModels
         public event EventHandler? SignUpSuccessful;
         public event EventHandler? BackToLoginRequested;
 
-        public SignUpViewModel(UserService userService, AvatarService avatarService)
+        public SignUpViewModel(IUserService userService, IAvatarService avatarService)
         {
             _userService = userService;
             _avatarService = avatarService;

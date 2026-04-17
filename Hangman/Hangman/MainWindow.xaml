@@ -45,15 +45,14 @@
                 <Separator/>
                 <MenuItem Header="_Cancel" Command="{Binding CancelCommand}"/>
             </MenuItem>
-            <MenuItem Header="_Categories">
-                <MenuItem Header="All Categories" Command="{Binding SelectCategoryCommand}" CommandParameter="AllCategories"
-                          FontWeight="{Binding SelectedCategoryDisplay, Converter={x:Static local:CategoryFontWeightHelper.Instance}, ConverterParameter=All Categories}"/>
-                <Separator/>
-                <MenuItem Header="Animals" Command="{Binding SelectCategoryCommand}" CommandParameter="Animals"/>
-                <MenuItem Header="Fruits" Command="{Binding SelectCategoryCommand}" CommandParameter="Fruits"/>
-                <MenuItem Header="Countries" Command="{Binding SelectCategoryCommand}" CommandParameter="Countries"/>
-                <MenuItem Header="Programming Languages" Command="{Binding SelectCategoryCommand}" CommandParameter="ProgrammingLanguages"/>
-                <MenuItem Header="Sports" Command="{Binding SelectCategoryCommand}" CommandParameter="Sports"/>
+            <MenuItem Header="_Categories" ItemsSource="{Binding Categories}">
+                <MenuItem.ItemContainerStyle>
+                    <Style TargetType="MenuItem">
+                        <Setter Property="Header" Value="{Binding}"/>
+                        <Setter Property="Command" Value="{Binding DataContext.SelectCategoryCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                        <Setter Property="CommandParameter" Value="{Binding}"/>
+                    </Style>
+                </MenuItem.ItemContainerStyle>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" Command="{Binding AboutCommand}"/>

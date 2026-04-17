@@ -3,7 +3,6 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Threading;
 using Hangman.Models;
 using Hangman.Services;
 
@@ -29,18 +28,20 @@ namespace Hangman.ViewModels
 
     public class GameViewModel : ViewModelBase
     {
-        private readonly GameService _gameService;
-        private readonly UserService _userService;
-        private readonly AvatarService _avatarService;
+        private readonly IWordRepository _wordRepository;
+        private readonly ISaveGameService _saveGameService;
+        private readonly IStatisticsService _statisticsService;
+        private readonly IGameTimerService _timerService;
+        private readonly IUserService _userService;
+        private readonly IAvatarService _avatarService;
         private readonly User _currentUser;
+
         private GameState _gameState;
-        private DispatcherTimer? _timer;
-        private DispatcherTimer? _transitionTimer;
-        private DispatcherTimer? _feedbackTimer;
         private string _feedbackMessage = string.Empty;
         private Brush _feedbackColor = Brushes.Transparent;
         private bool _showFeedback;
         private bool _isTransitioning;
+
 
         public GameState GameState
         {
@@ -87,22 +88,33 @@ namespace Hangman.ViewModels
         public event EventHandler? GameExitRequested;
         public event EventHandler? FocusRequested;
 
-        public GameViewModel(GameState gameState, GameService gameService, UserService userService, AvatarService avatarService, User currentUser)
+        public GameViewModel(
+            GameState gameState,
+            IWordRepository wordRepository,
+            ISaveGameService saveGameService,
+            IStatisticsService statisticsService,
+            IGameTimerService timerService,
+            IUserService userService,
+            IAvatarService avatarService,
+            User currentUser)
         {
             GameState = gameState;
-            _gameService = gameService;
+            _wordRepository = wordRepository;
+            _saveGameService = saveGameService;
+            _statisticsService = statisticsService;
+            _timerService = timerService;
             _userService = userService;
             _avatarService = avatarService;
             _currentUser = currentUser;
 
             NotifyAllProperties();
 
+            // Build the A-Z letter button collection.
             LetterButtons = new ObservableCollection<LetterButtonViewModel>();
             for (char c = 'A'; c <= 'Z'; c++)
-            {
                 LetterButtons.Add(new LetterButtonViewModel(c));
-            }
 
+            // Restore already-guessed letters when loading a saved game.
             if (!string.IsNullOrEmpty(gameState.GuessedLetters))
             {
                 foreach (char c in gameState.GuessedLetters)
@@ -126,7 +138,9 @@ namespace Hangman.ViewModels
             SaveGameCommand = new RelayCommand(_ => SaveGame(), _ => IsGameActive);
             ExitGameCommand = new RelayCommand(_ => ExitGame());
 
-            StartTimer();
+            // Subscribe to the timer tick event (SRP: we react, the service fires).
+            _timerService.GameTimerTick += OnGameTimerTick;
+            _timerService.StartGameTimer();
         }
 
         public void ProcessKeyboardLetter(char letter)
@@ -136,31 +150,20 @@ namespace Hangman.ViewModels
             {
                 var btn = LetterButtons.FirstOrDefault(b => b.Letter == letter);
                 if (btn != null && !btn.IsUsed)
-                {
                     GuessLetter(letter);
-                }
             }
         }
 
-        private void StartTimer()
+        private void OnGameTimerTick(object? sender, EventArgs e)
         {
-            _timer?.Stop();
-            _timer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(1)
-            };
-            _timer.Tick += (sender, e) =>
-            {
-                GameState.DecrementTimer();
-                OnPropertyChanged(nameof(TimerDisplay));
+            GameState.DecrementTimer();
+            OnPropertyChanged(nameof(TimerDisplay));
 
-                if (GameState.IsGameOver)
-                {
-                    _timer?.Stop();
-                    HandleWordLost();
-                }
-            };
-            _timer.Start();
+            if (GameState.IsGameOver)
+            {
+                _timerService.StopGameTimer();
+                HandleWordLost();
+            }
         }
 
         private void GuessLetter(char letter)
@@ -175,28 +178,22 @@ namespace Hangman.ViewModels
 
             var isCorrect = GameState.GuessLetter(letter);
 
+            // Reset countdown on every guess.
             GameState.TimeRemaining = 30;
             OnPropertyChanged(nameof(TimerDisplay));
             OnPropertyChanged(nameof(GameState));
             OnPropertyChanged(nameof(MaskedWord));
 
-            if (isCorrect)
-            {
-                ShowFeedbackMessage("Correct! ✓", true);
-            }
-            else
-            {
-                ShowFeedbackMessage("Wrong! ✗", false);
-            }
+            ShowFeedbackMessage(isCorrect ? "Correct! ✓" : "Wrong! ✗", isCorrect);
 
             if (GameState.IsWon)
             {
-                _timer?.Stop();
+                _timerService.StopGameTimer();
                 HandleWordWon();
             }
             else if (GameState.IsGameOver)
             {
-                _timer?.Stop();
+                _timerService.StopGameTimer();
                 HandleWordLost();
             }
         }
@@ -208,34 +205,26 @@ namespace Hangman.ViewModels
 
             if (GameState.CurrentLevel >= 3)
             {
+                // All 3 levels beaten — count as a won game.
                 if (GameState.SaveId.HasValue)
-                {
-                    _gameService.DeleteSavedGame(GameState.SaveId.Value);
-                }
+                    _saveGameService.DeleteSavedGame(GameState.SaveId.Value);
 
-                _gameService.UpdateGameStatistics(GameState.Username, GameState.Category, GameState.CurrentLevel, true);
+                _statisticsService.UpdateGameStatistics(
+                    GameState.Username, GameState.Category, GameState.CurrentLevel, true);
 
                 var newWord = GetNextWord(GameState.CurrentWord);
 
                 ShowTransitionFeedback("🏆 You won 3 levels! Starting fresh...", true, () =>
                 {
-                    GameState.CurrentWord = newWord;
-                    GameState.CurrentLevel = 1;
-                    GameState.GuessedLetters = string.Empty;
-                    GameState.WrongGuesses = 0;
-                    GameState.TimeRemaining = 30;
-                    GameState.IsGameOver = false;
-                    GameState.IsWon = false;
-
-                    ResetLetterButtons();
-                    NotifyAllProperties();
-                    StartTimer();
+                    ResetRound(newWord, level: 1);
                     FocusRequested?.Invoke(this, EventArgs.Empty);
                 });
             }
             else
             {
-                ShowTransitionFeedback($"Level {GameState.CurrentLevel} complete! Next level...", true, () => AdvanceToNextLevel());
+                ShowTransitionFeedback(
+                    $"Level {GameState.CurrentLevel} complete! Next level...", true,
+                    () => AdvanceToNextLevel());
             }
         }
 
@@ -245,30 +234,42 @@ namespace Hangman.ViewModels
             OnPropertyChanged(nameof(IsGameActive));
 
             if (GameState.SaveId.HasValue)
-            {
-                _gameService.DeleteSavedGame(GameState.SaveId.Value);
-            }
+                _saveGameService.DeleteSavedGame(GameState.SaveId.Value);
 
-            _gameService.UpdateGameStatistics(GameState.Username, GameState.Category, GameState.CurrentLevel, false);
-            string lostWord = GameState.CurrentWord;
+            _statisticsService.UpdateGameStatistics(
+                GameState.Username, GameState.Category, GameState.CurrentLevel, false);
 
-            var newWord = GetNextWord(GameState.CurrentWord);
+            var lostWord = GameState.CurrentWord;
+            var newWord = GetNextWord(lostWord);
 
             ShowTransitionFeedback($"Lost! The word was: {lostWord}", false, () =>
             {
-                GameState.CurrentWord = newWord;
-                GameState.CurrentLevel = 1;
-                GameState.GuessedLetters = string.Empty;
-                GameState.WrongGuesses = 0;
-                GameState.TimeRemaining = 30;
-                GameState.IsGameOver = false;
-                GameState.IsWon = false;
-
-                ResetLetterButtons();
-                NotifyAllProperties();
-                StartTimer();
+                ResetRound(newWord, level: 1);
                 FocusRequested?.Invoke(this, EventArgs.Empty);
             });
+        }
+
+        private void AdvanceToNextLevel()
+        {
+            ResetRound(GetNextWord(GameState.CurrentWord), GameState.CurrentLevel + 1);
+            FocusRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void ResetRound(string newWord, int level)
+        {
+            GameState.CurrentWord = newWord;
+            GameState.CurrentLevel = level;
+            GameState.GuessedLetters = string.Empty;
+            GameState.WrongGuesses = 0;
+            GameState.TimeRemaining = 30;
+            GameState.IsGameOver = false;
+            GameState.IsWon = false;
+
+            ResetLetterButtons();
+            NotifyAllProperties();
+            _isTransitioning = false;
+
+            _timerService.StartGameTimer();
         }
 
         private void ShowTransitionFeedback(string message, bool isPositive, Action nextAction)
@@ -279,69 +280,36 @@ namespace Hangman.ViewModels
                 : new SolidColorBrush(Color.FromRgb(239, 68, 68));
             ShowFeedback = true;
 
-            _feedbackTimer?.Stop();
-            _transitionTimer?.Stop();
-            _transitionTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
-            _transitionTimer.Tick += (s, e) =>
+            _timerService.StartTransitionTimer(() =>
             {
-                _transitionTimer.Stop();
                 ShowFeedback = false;
                 _isTransitioning = false;
                 nextAction();
-            };
-            _transitionTimer.Start();
+            });
         }
 
-        private void AdvanceToNextLevel()
+        private void ShowFeedbackMessage(string message, bool isCorrect)
         {
-            var newWord = GetNextWord(GameState.CurrentWord);
+            FeedbackMessage = message;
+            FeedbackColor = isCorrect
+                ? new SolidColorBrush(Color.FromRgb(16, 185, 129))
+                : new SolidColorBrush(Color.FromRgb(239, 68, 68));
+            ShowFeedback = true;
 
-            GameState.CurrentWord = newWord;
-            GameState.CurrentLevel++;
-            GameState.GuessedLetters = string.Empty;
-            GameState.WrongGuesses = 0;
-            GameState.TimeRemaining = 30;
-            GameState.IsGameOver = false;
-            GameState.IsWon = false;
-
-            ResetLetterButtons();
-            NotifyAllProperties();
-            StartTimer();
-            FocusRequested?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void StartFreshRound()
-        {
-            var newWord = GetNextWord(GameState.CurrentWord);
-
-            GameState.CurrentWord = newWord;
-            GameState.CurrentLevel = 1;
-            GameState.GuessedLetters = string.Empty;
-            GameState.WrongGuesses = 0;
-            GameState.TimeRemaining = 30;
-            GameState.IsGameOver = false;
-            GameState.IsWon = false;
-
-            ResetLetterButtons();
-            NotifyAllProperties();
-            StartTimer();
-            FocusRequested?.Invoke(this, EventArgs.Empty);
+            _timerService.StartFeedbackTimer(() => ShowFeedback = false);
         }
 
         private string GetNextWord(string excludeWord)
         {
-            if (GameState.Category == "All Categories")
-                return _gameService.GetRandomWordFromAllCategoriesExcluding(excludeWord);
-            else
-                return _gameService.GetRandomWordExcluding(GameState.Category, excludeWord);
+            return GameState.Category == "All Categories"
+                ? _wordRepository.GetRandomWordFromAllCategoriesExcluding(excludeWord)
+                : _wordRepository.GetRandomWordExcluding(GameState.Category, excludeWord);
         }
 
         private void ResetLetterButtons()
         {
             foreach (var btn in LetterButtons)
-            {
                 btn.IsUsed = false;
-            }
         }
 
         private void NotifyAllProperties()
@@ -354,31 +322,10 @@ namespace Hangman.ViewModels
             OnPropertyChanged(nameof(GameState));
         }
 
-        private void ShowFeedbackMessage(string message, bool isCorrect)
-        {
-            FeedbackMessage = message;
-            FeedbackColor = isCorrect
-                ? new SolidColorBrush(Color.FromRgb(16, 185, 129))
-                : new SolidColorBrush(Color.FromRgb(239, 68, 68));
-            ShowFeedback = true;
-
-            _feedbackTimer?.Stop();
-            _feedbackTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromMilliseconds(2000)
-            };
-            _feedbackTimer.Tick += (s, e) =>
-            {
-                ShowFeedback = false;
-                _feedbackTimer.Stop();
-            };
-            _feedbackTimer.Start();
-        }
-
         public void SaveGame()
         {
             string saveName = $"Save {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
-            var saveId = _gameService.SaveGame(GameState, saveName);
+            var saveId = _saveGameService.SaveGame(GameState, saveName);
             GameState.SaveId = saveId;
             MessageBox.Show($"Game saved successfully as '{saveName}'!", "Save Game",
                 MessageBoxButton.OK, MessageBoxImage.Information);
@@ -386,13 +333,10 @@ namespace Hangman.ViewModels
 
         private void ExitGame()
         {
-            _timer?.Stop();
+            _timerService.StopGameTimer();
             GameExitRequested?.Invoke(this, EventArgs.Empty);
         }
 
-        public void StopTimer()
-        {
-            _timer?.Stop();
-        }
+        public void StopTimer() => _timerService.StopGameTimer();
     }
 }

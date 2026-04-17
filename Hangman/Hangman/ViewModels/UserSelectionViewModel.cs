@@ -8,7 +8,7 @@ namespace Hangman.ViewModels
 {
     public class UserSelectionViewModel : ViewModelBase
     {
-        private readonly UserService _userService;
+        private readonly IUserService _userService;
         private ObservableCollection<User> _users;
         private User? _selectedUser;
         private int _selectedIndex;
@@ -54,7 +54,7 @@ namespace Hangman.ViewModels
         public event EventHandler<User>? PlayRequested;
         public event EventHandler? CancelRequested;
 
-        public UserSelectionViewModel(UserService userService)
+        public UserSelectionViewModel(IUserService userService)
         {
             _userService = userService;
             Users = new ObservableCollection<User>(_userService.GetAllUsers());

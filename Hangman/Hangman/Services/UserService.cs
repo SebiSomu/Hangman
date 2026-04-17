@@ -6,7 +6,7 @@ using Hangman.Models;
 
 namespace Hangman.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
         private readonly string _usersFilePath;
         private List<User> _users;
@@ -52,6 +52,18 @@ namespace Hangman.Services
         {
             _users.Add(user);
             SaveUsers();
+        }
+
+        public void UpdateUser(User user)
+        {
+            var existing = _users.FirstOrDefault(u =>
+                u.Username.Equals(user.Username, System.StringComparison.OrdinalIgnoreCase));
+            if (existing != null)
+            {
+                existing.AvatarFileName = user.AvatarFileName;
+                existing.Password = user.Password;
+                SaveUsers();
+            }
         }
 
         public void DeleteUser(string username)
