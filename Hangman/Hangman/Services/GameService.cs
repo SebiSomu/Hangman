@@ -291,7 +291,8 @@ namespace Hangman.Services
                 CurrentLevel = saveData.CurrentLevel,
                 TimeRemaining = saveData.TimeRemaining,
                 IsGameOver = false,
-                IsWon = false
+                IsWon = false,
+                SaveId = saveData.SaveId
             };
         }
 

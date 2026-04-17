@@ -206,6 +206,11 @@ namespace Hangman.ViewModels
 
             if (GameState.CurrentLevel >= 3)
             {
+                if (GameState.SaveId.HasValue)
+                {
+                    _gameService.DeleteSavedGame(GameState.SaveId.Value);
+                }
+
                 _gameService.UpdateGameStatistics(GameState.Username, GameState.Category, GameState.CurrentLevel, true);
 
                 var newWord = GetNextWord(GameState.CurrentWord);
@@ -236,6 +241,11 @@ namespace Hangman.ViewModels
         {
             _isTransitioning = true;
             OnPropertyChanged(nameof(IsGameActive));
+
+            if (GameState.SaveId.HasValue)
+            {
+                _gameService.DeleteSavedGame(GameState.SaveId.Value);
+            }
 
             _gameService.UpdateGameStatistics(GameState.Username, GameState.Category, GameState.CurrentLevel, false);
             string lostWord = GameState.CurrentWord;

@@ -12,6 +12,7 @@ namespace Hangman.Models
         public bool IsGameOver { get; set; }
         public bool IsWon { get; set; }
         public string Username { get; set; } = string.Empty;
+        public Guid? SaveId { get; set; }
 
         public string GetMaskedWord()
         {
