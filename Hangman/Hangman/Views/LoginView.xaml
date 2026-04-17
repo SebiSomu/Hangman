@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:converters="clr-namespace:Hangman.Converters"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="900"
              Background="White">
@@ -145,7 +146,7 @@
         <!-- Left Decorative Panel -->
         <Border Grid.Column="0" Background="{StaticResource BackgroundSubtleColor}">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="40">
-                <TextBlock Text="🎮" FontSize="80" HorizontalAlignment="Center" Margin="0,0,0,24"/>
+                <materialDesign:PackIcon Kind="GamepadVariant" Width="80" Height="80" HorizontalAlignment="Center" Margin="0,0,0,24" Foreground="{StaticResource PrimaryColor}"/>
                 <TextBlock Text="Hangman" FontSize="42" FontWeight="Bold" 
                            Foreground="{StaticResource TextPrimaryColor}" 
                            HorizontalAlignment="Center"/>

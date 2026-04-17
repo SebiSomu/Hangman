@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="800">
     <UserControl.Resources>
@@ -75,13 +76,10 @@
                                     Padding="24"
                                     Margin="0,0,0,20">
                                 <StackPanel>
-                                    <!-- User Header -->
-                                    <TextBlock FontSize="20" FontWeight="Bold"
-                                               Foreground="{StaticResource PrimaryColor}"
-                                               Margin="0,0,0,15">
-                                        <Run Text="👤 "/>
-                                        <Run Text="{Binding Username, Mode=OneWay}"/>
-                                    </TextBlock>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                        <materialDesign:PackIcon Kind="AccountOutline" Width="24" Height="24" Foreground="{StaticResource PrimaryColor}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Username}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource PrimaryColor}" VerticalAlignment="Center"/>
+                                    </StackPanel>
 
                                     <!-- Stats Grid -->
                                     <UniformGrid Columns="4" Margin="0,0,0,15">
@@ -89,7 +87,7 @@
                                         <Border Background="White" CornerRadius="8" Padding="16" Margin="4"
                                                 BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
                                             <StackPanel HorizontalAlignment="Center">
-                                                <TextBlock Text="🎮" FontSize="20" HorizontalAlignment="Center"/>
+                                                <materialDesign:PackIcon Kind="GamepadVariantOutline" Width="28" Height="28" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryColor}"/>
                                                 <TextBlock Text="{Binding TotalGamesPlayed}" 
                                                            FontSize="28" FontWeight="Bold"
                                                            Foreground="{StaticResource PrimaryColor}"
@@ -103,7 +101,7 @@
                                         <Border Background="White" CornerRadius="8" Padding="16" Margin="4"
                                                 BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
                                             <StackPanel HorizontalAlignment="Center">
-                                                <TextBlock Text="🏆" FontSize="20" HorizontalAlignment="Center"/>
+                                                <materialDesign:PackIcon Kind="TrophyOutline" Width="28" Height="28" HorizontalAlignment="Center" Foreground="{StaticResource SuccessColor}"/>
                                                 <TextBlock Text="{Binding GamesWon}" 
                                                            FontSize="28" FontWeight="Bold"
                                                            Foreground="{StaticResource SuccessColor}"
@@ -117,7 +115,7 @@
                                         <Border Background="White" CornerRadius="8" Padding="16" Margin="4"
                                                 BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
                                             <StackPanel HorizontalAlignment="Center">
-                                                <TextBlock Text="❌" FontSize="20" HorizontalAlignment="Center"/>
+                                                <materialDesign:PackIcon Kind="CloseBoxOutline" Width="28" Height="28" HorizontalAlignment="Center" Foreground="{StaticResource ErrorColor}"/>
                                                 <TextBlock Text="{Binding GamesLost}" 
                                                            FontSize="28" FontWeight="Bold"
                                                            Foreground="{StaticResource ErrorColor}"
@@ -131,7 +129,7 @@
                                         <Border Background="White" CornerRadius="8" Padding="16" Margin="4"
                                                 BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
                                             <StackPanel HorizontalAlignment="Center">
-                                                <TextBlock Text="📊" FontSize="20" HorizontalAlignment="Center"/>
+                                                <materialDesign:PackIcon Kind="ChartBoxOutline" Width="28" Height="28" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryColor}"/>
                                                 <TextBlock Text="{Binding WinRateDisplay}" 
                                                            FontSize="28" FontWeight="Bold"
                                                            Foreground="{StaticResource PrimaryColor}"

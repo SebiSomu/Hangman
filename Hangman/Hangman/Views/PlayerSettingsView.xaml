@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:converters="clr-namespace:Hangman.Converters"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
              d:DesignHeight="500" d:DesignWidth="600"
              Background="White">
@@ -70,8 +71,9 @@
                     BorderThickness="2"
                     Margin="0,0,0,20">
                 <Grid>
-                    <TextBlock Text="👤" FontSize="60"
+                    <materialDesign:PackIcon Kind="AccountCircleOutline" Width="60" Height="60"
                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Foreground="{StaticResource TextSecondaryColor}"
                                Visibility="{Binding AvatarImage, Converter={StaticResource StringToNullVisibilityConverter}}"/>
                     <Ellipse Width="146" Height="146">
                         <Ellipse.Fill>

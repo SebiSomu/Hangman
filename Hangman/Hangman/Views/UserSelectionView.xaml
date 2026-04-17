@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:converters="clr-namespace:Hangman.Converters"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
              d:DesignHeight="500" d:DesignWidth="700"
              Background="White">
@@ -156,9 +157,9 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center">
                     <Grid>
-                        <!-- Default placeholder -->
-                        <TextBlock Text="👤" FontSize="80"
+                        <materialDesign:PackIcon Kind="AccountCircleOutline" Width="80" Height="80"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextSecondaryColor}"
                                    Visibility="{Binding SelectedUser.AvatarFileName, Converter={StaticResource StringToNullVisibilityConverter}}"/>
                         <!-- User image -->
                         <Image Source="{Binding SelectedUser.AvatarFileName, Converter={StaticResource AvatarFileNameToImageConverter}}"

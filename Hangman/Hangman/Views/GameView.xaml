@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:converters="clr-namespace:Hangman.Converters"
              xmlns:controls="clr-namespace:Hangman.Controls"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="900"
              Focusable="True"
@@ -48,8 +49,9 @@
             <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20"
                     Background="{StaticResource PrimaryColor}" Margin="0,0,10,0">
                 <Grid>
-                    <TextBlock Text="👤" FontSize="18"
+                    <materialDesign:PackIcon Kind="AccountCircleOutline" Width="20" Height="20"
                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Foreground="White"
                                Visibility="{Binding PlayerAvatarFileName, Converter={StaticResource StringToNullVisibilityConverter}}"/>
                     <Ellipse Width="38" Height="38"
                              Visibility="{Binding PlayerAvatarFileName, Converter={StaticResource StringToVisibilityConverter}}">
@@ -204,11 +206,14 @@
                     Orientation="Horizontal" 
                     HorizontalAlignment="Center"
                     Margin="0,0,0,5">
-            <Button Content="💾 Save Game" 
-                    Command="{Binding SaveGameCommand}"
+            <Button Command="{Binding SaveGameCommand}"
                     Height="36" Padding="16,0" FontSize="13" FontWeight="SemiBold"
                     Background="{StaticResource PrimaryColor}" Foreground="White"
                     BorderThickness="0" Margin="5,0" Cursor="Hand">
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="ContentSaveOutline" Width="16" Height="16" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Save Game" VerticalAlignment="Center"/>
+                </StackPanel>
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="8"/>

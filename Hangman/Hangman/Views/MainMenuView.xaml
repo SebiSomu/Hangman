@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:converters="clr-namespace:Hangman.Converters"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="900"
              Background="White">
@@ -127,7 +128,7 @@
                     <Button Style="{StaticResource MenuCard}" Margin="12"
                             Command="{Binding NewGameCommand}">
                         <StackPanel>
-                            <TextBlock Text="🎮" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                            <materialDesign:PackIcon Kind="GamepadVariantOutline" Width="48" Height="48" HorizontalAlignment="Center" Margin="0,0,0,12" Foreground="{StaticResource PrimaryColor}"/>
                             <TextBlock Text="New Game" FontSize="18" FontWeight="SemiBold" 
                                        Foreground="{StaticResource TextPrimaryColor}" HorizontalAlignment="Center"/>
                             <TextBlock Text="Start a new game" FontSize="13" 
@@ -139,7 +140,7 @@
                     <Button Style="{StaticResource MenuCard}" Margin="12"
                             Command="{Binding ContinueGameCommand}">
                         <StackPanel>
-                            <TextBlock Text="📂" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                            <materialDesign:PackIcon Kind="FolderOpenOutline" Width="48" Height="48" HorizontalAlignment="Center" Margin="0,0,0,12" Foreground="{StaticResource PrimaryColor}"/>
                             <TextBlock Text="Continue Game" FontSize="18" FontWeight="SemiBold" 
                                        Foreground="{StaticResource TextPrimaryColor}" HorizontalAlignment="Center"/>
                             <TextBlock Text="Load saved game" FontSize="13" 
@@ -151,7 +152,7 @@
                     <Button Style="{StaticResource MenuCard}" Margin="12"
                             Command="{Binding StatisticsCommand}">
                         <StackPanel>
-                            <TextBlock Text="📊" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                            <materialDesign:PackIcon Kind="ChartBoxOutline" Width="48" Height="48" HorizontalAlignment="Center" Margin="0,0,0,12" Foreground="{StaticResource PrimaryColor}"/>
                             <TextBlock Text="Statistics" FontSize="18" FontWeight="SemiBold" 
                                        Foreground="{StaticResource TextPrimaryColor}" HorizontalAlignment="Center"/>
                             <TextBlock Text="View your progress" FontSize="13" 
@@ -163,7 +164,7 @@
                     <Button Style="{StaticResource MenuCard}" Margin="12"
                             Command="{Binding PlayerSettingsCommand}">
                         <StackPanel>
-                            <TextBlock Text="⚙️" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                            <materialDesign:PackIcon Kind="CogOutline" Width="48" Height="48" HorizontalAlignment="Center" Margin="0,0,0,12" Foreground="{StaticResource PrimaryColor}"/>
                             <TextBlock Text="Settings" FontSize="18" FontWeight="SemiBold" 
                                        Foreground="{StaticResource TextPrimaryColor}" HorizontalAlignment="Center"/>
                             <TextBlock Text="Change profile picture" FontSize="13" 
@@ -175,7 +176,7 @@
                     <Button Style="{StaticResource MenuCard}" Margin="12"
                             Command="{Binding DeleteAccountCommand}">
                         <StackPanel>
-                            <TextBlock Text="🗑️" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                            <materialDesign:PackIcon Kind="DeleteOutline" Width="48" Height="48" HorizontalAlignment="Center" Margin="0,0,0,12" Foreground="{StaticResource ErrorColor}"/>
                             <TextBlock Text="Delete Account" FontSize="18" FontWeight="SemiBold" 
                                        Foreground="{StaticResource ErrorColor}" HorizontalAlignment="Center"/>
                             <TextBlock Text="Remove account" FontSize="13" 
