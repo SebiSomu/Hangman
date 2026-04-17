@@ -57,7 +57,13 @@ namespace Hangman.ViewModels
 
             ChangeImageCommand = new RelayCommand(_ => ChangeImage());
             SaveCommand = new RelayCommand(_ => SaveSettings());
-            BackCommand = new RelayCommand(_ => BackRequested?.Invoke(this, EventArgs.Empty));
+            BackCommand = new RelayCommand(_ => {
+                if (AvatarFileName != _currentUser.AvatarFileName)
+                {
+                    _avatarService.DeleteAvatar(AvatarFileName);
+                }
+                BackRequested?.Invoke(this, EventArgs.Empty);
+            });
         }
 
         private void ChangeImage()
@@ -72,9 +78,15 @@ namespace Hangman.ViewModels
             {
                 try
                 {
-                    var fileName = _avatarService.SaveAvatar(openFileDialog.FileName, _currentUser.Username);
-                    AvatarFileName = fileName;
-                    AvatarImage = _avatarService.GetAvatarImage(fileName);
+                    var newFileName = _avatarService.SaveAvatar(openFileDialog.FileName, _currentUser.Username);
+                    
+                    if (AvatarFileName != _currentUser.AvatarFileName)
+                    {
+                        _avatarService.DeleteAvatar(AvatarFileName);
+                    }
+
+                    AvatarFileName = newFileName;
+                    AvatarImage = _avatarService.GetAvatarImage(newFileName);
                 }
                 catch (Exception ex)
                 {
@@ -85,6 +97,10 @@ namespace Hangman.ViewModels
 
         private void SaveSettings()
         {
+            if (_currentUser.AvatarFileName != AvatarFileName)
+            {
+                _avatarService.DeleteAvatar(_currentUser.AvatarFileName);
+            }
             CurrentUser.AvatarFileName = AvatarFileName;
             _userService.UpdateUser(CurrentUser);
             SettingsSaved?.Invoke(this, EventArgs.Empty);

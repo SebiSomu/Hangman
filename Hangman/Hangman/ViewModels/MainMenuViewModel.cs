@@ -69,6 +69,7 @@ namespace Hangman.ViewModels
 
             if (result == System.Windows.MessageBoxResult.Yes)
             {
+                _avatarService.DeleteAvatar(CurrentUser.AvatarFileName);
                 _saveGameService.DeleteAllSavedGamesForUser(CurrentUser.Username);
                 _statisticsService.DeleteUserStatistics(CurrentUser.Username);
                 _userService.DeleteUser(CurrentUser.Username);

@@ -9,6 +9,9 @@ namespace Hangman.ViewModels
     public class UserSelectionViewModel : ViewModelBase
     {
         private readonly IUserService _userService;
+        private readonly ISaveGameService _saveGameService;
+        private readonly IStatisticsService _statisticsService;
+        private readonly IAvatarService _avatarService;
         private ObservableCollection<User> _users;
         private User? _selectedUser;
         private int _selectedIndex;
@@ -54,9 +57,16 @@ namespace Hangman.ViewModels
         public event EventHandler<User>? PlayRequested;
         public event EventHandler? CancelRequested;
 
-        public UserSelectionViewModel(IUserService userService)
+        public UserSelectionViewModel(
+            IUserService userService,
+            ISaveGameService saveGameService,
+            IStatisticsService statisticsService,
+            IAvatarService avatarService)
         {
             _userService = userService;
+            _saveGameService = saveGameService;
+            _statisticsService = statisticsService;
+            _avatarService = avatarService;
             Users = new ObservableCollection<User>(_userService.GetAllUsers());
 
             NewUserCommand = new RelayCommand(_ => NewUserRequested?.Invoke(this, EventArgs.Empty));
@@ -104,6 +114,9 @@ namespace Hangman.ViewModels
 
             if (result == MessageBoxResult.Yes)
             {
+                _avatarService.DeleteAvatar(SelectedUser.AvatarFileName);
+                _saveGameService.DeleteAllSavedGamesForUser(SelectedUser.Username);
+                _statisticsService.DeleteUserStatistics(SelectedUser.Username);
                 _userService.DeleteUser(SelectedUser.Username);
                 Users.Remove(SelectedUser);
                 

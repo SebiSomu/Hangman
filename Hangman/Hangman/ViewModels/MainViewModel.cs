@@ -139,7 +139,7 @@ namespace Hangman.ViewModels
             _currentGameViewModel = null;
 
             var view = new UserSelectionView();
-            var vm   = new UserSelectionViewModel(_userService);
+            var vm = new UserSelectionViewModel(_userService, _saveGameService, _statisticsService, _avatarService);
 
             vm.NewUserRequested  += (_, _) => ShowSignUp();
             vm.PlayRequested     += (_, user) => ShowPasswordDialog(user);
