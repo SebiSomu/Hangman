@@ -15,11 +15,18 @@ namespace Hangman.Services
 
         public Guid SaveGame(GameState gameState, string? saveName = null)
         {
-            var savedGames = LoadAllSavedGames();
+            var allSaves = LoadAllSavedGames();
+            var username = gameState.Username;
+
+            if (!allSaves.TryGetValue(username, out var userSaves))
+            {
+                userSaves = new List<GameSaveData>();
+                allSaves[username] = userSaves;
+            }
 
             if (gameState.SaveId.HasValue)
             {
-                var existing = savedGames.FirstOrDefault(g => g.SaveId == gameState.SaveId.Value);
+                var existing = userSaves.FirstOrDefault(g => g.SaveId == gameState.SaveId.Value);
                 if (existing != null)
                 {
                     existing.CurrentWord = gameState.CurrentWord;
@@ -29,7 +36,7 @@ namespace Hangman.Services
                     existing.TimeRemaining = gameState.TimeRemaining;
                     existing.SavedAt = DateTime.Now;
 
-                    Persist(savedGames);
+                    Persist(allSaves);
                     return gameState.SaveId.Value;
                 }
             }
@@ -37,8 +44,8 @@ namespace Hangman.Services
             var saveData = new GameSaveData
             {
                 SaveId = Guid.NewGuid(),
-                Username = gameState.Username,
-                SaveName = saveName ?? $"Save {savedGames.Count(g => g.Username == gameState.Username) + 1}",
+                Username = username,
+                SaveName = saveName ?? $"Save {userSaves.Count + 1}",
                 CurrentWord = gameState.CurrentWord,
                 Category = gameState.Category,
                 GuessedLetters = gameState.GuessedLetters,
@@ -48,49 +55,93 @@ namespace Hangman.Services
                 SavedAt = DateTime.Now
             };
 
-            savedGames.Add(saveData);
-            Persist(savedGames);
+            userSaves.Add(saveData);
+            Persist(allSaves);
             return saveData.SaveId;
         }
 
         public GameSaveData? LoadSavedGame(Guid saveId)
         {
-            var savedGames = LoadAllSavedGames();
-            return savedGames.FirstOrDefault(g => g.SaveId == saveId);
+            var allSaves = LoadAllSavedGames();
+            return allSaves.Values.SelectMany(list => list).FirstOrDefault(g => g.SaveId == saveId);
         }
 
         public List<GameSaveData> GetSavedGamesForUser(string username)
         {
-            return LoadAllSavedGames()
-                .Where(g => g.Username == username)
-                .OrderByDescending(g => g.SavedAt)
-                .ToList();
+            var allSaves = LoadAllSavedGames();
+            if (allSaves.TryGetValue(username, out var userSaves))
+            {
+                return userSaves.OrderByDescending(g => g.SavedAt).ToList();
+            }
+            return new List<GameSaveData>();
         }
 
         public void DeleteSavedGame(Guid saveId)
         {
-            var savedGames = LoadAllSavedGames();
-            savedGames.RemoveAll(g => g.SaveId == saveId);
-            Persist(savedGames);
+            var allSaves = LoadAllSavedGames();
+            bool removed = false;
+
+            foreach (var userList in allSaves.Values)
+            {
+                var item = userList.FirstOrDefault(g => g.SaveId == saveId);
+                if (item != null)
+                {
+                    userList.Remove(item);
+                    removed = true;
+                    break;
+                }
+            }
+
+            if (removed)
+            {
+                Persist(allSaves);
+            }
         }
 
         public void DeleteAllSavedGamesForUser(string username)
         {
-            var savedGames = LoadAllSavedGames();
-            savedGames.RemoveAll(g => g.Username == username);
-            Persist(savedGames);
+            var allSaves = LoadAllSavedGames();
+            if (allSaves.Remove(username))
+            {
+                Persist(allSaves);
+            }
         }
 
         // ── Helpers ─────────────────────────────────────────────────────────
 
-        private List<GameSaveData> LoadAllSavedGames()
+        private Dictionary<string, List<GameSaveData>> LoadAllSavedGames()
         {
-            if (!File.Exists(_saveGamesPath)) return new List<GameSaveData>();
+            if (!File.Exists(_saveGamesPath)) 
+                return new Dictionary<string, List<GameSaveData>>();
+
             var json = File.ReadAllText(_saveGamesPath);
-            return JsonSerializer.Deserialize<List<GameSaveData>>(json) ?? new List<GameSaveData>();
+            if (string.IsNullOrWhiteSpace(json))
+                return new Dictionary<string, List<GameSaveData>>();
+
+            try
+            {
+                if (json.TrimStart().StartsWith("{"))
+                {
+                    return JsonSerializer.Deserialize<Dictionary<string, List<GameSaveData>>>(json) 
+                           ?? new Dictionary<string, List<GameSaveData>>();
+                }
+
+                if (json.TrimStart().StartsWith("["))
+                {
+                    var oldList = JsonSerializer.Deserialize<List<GameSaveData>>(json);
+                    if (oldList != null)
+                    {
+                        return oldList.GroupBy(g => g.Username)
+                                      .ToDictionary(g => g.Key, g => g.ToList());
+                    }
+                }
+            }
+            catch { }
+
+            return new Dictionary<string, List<GameSaveData>>();
         }
 
-        private void Persist(List<GameSaveData> data)
+        private void Persist(Dictionary<string, List<GameSaveData>> data)
         {
             var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(_saveGamesPath, json);
