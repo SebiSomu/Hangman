@@ -89,11 +89,13 @@ namespace Hangman.ViewModels
 
         public GameViewModel(GameState gameState, GameService gameService, UserService userService, AvatarService avatarService, User currentUser)
         {
-            _gameState = gameState;
+            GameState = gameState;
             _gameService = gameService;
             _userService = userService;
             _avatarService = avatarService;
             _currentUser = currentUser;
+
+            NotifyAllProperties();
 
             LetterButtons = new ObservableCollection<LetterButtonViewModel>();
             for (char c = 'A'; c <= 'Z'; c++)
