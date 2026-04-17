@@ -45,7 +45,16 @@ namespace Hangman.Controls
 
             // Head
             if (WrongGuesses >= 1)
+            {
                 DrawEllipse(160, 80, 40, 40, 3);
+
+                // X eyes only when game is lost
+                if (WrongGuesses >= 6)
+                {
+                    DrawX(168, 90, 8, 2);  // Left x-eye
+                    DrawX(184, 90, 8, 2);  // Right x-eye
+                }
+            }
 
             // Body
             if (WrongGuesses >= 2)
@@ -95,6 +104,16 @@ namespace Hangman.Controls
             SetLeft(ellipse, x);
             SetTop(ellipse, y);
             Children.Add(ellipse);
+        }
+
+        private void DrawX(double x, double y, double size, double thickness)
+        {
+            var centerX = x + size / 2;
+            var centerY = y + size / 2;
+            var offset = size / 2 - 2;
+
+            DrawLine(centerX - offset, centerY - offset, centerX + offset, centerY + offset, thickness);
+            DrawLine(centerX + offset, centerY - offset, centerX - offset, centerY + offset, thickness);
         }
     }
 }
