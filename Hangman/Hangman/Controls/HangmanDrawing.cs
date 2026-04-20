@@ -37,42 +37,34 @@ namespace Hangman.Controls
         {
             Children.Clear();
 
-            // Base 
-            DrawLine(50, 280, 200, 280, 4); // Base line
-            DrawLine(80, 280, 80, 50, 4);   // Vertical pole
-            DrawLine(80, 50, 180, 50, 4);   // Horizontal top
-            DrawLine(180, 50, 180, 80, 3);  // Rope
+            DrawLine(50, 280, 200, 280, 4); 
+            DrawLine(80, 280, 80, 50, 4);   
+            DrawLine(80, 50, 180, 50, 4);  
+            DrawLine(180, 50, 180, 80, 3); 
 
-            // Head
             if (WrongGuesses >= 1)
             {
                 DrawEllipse(160, 80, 40, 40, 3);
 
-                // X eyes only when game is lost
                 if (WrongGuesses >= 6)
                 {
-                    DrawX(168, 90, 8, 2);  // Left x-eye
-                    DrawX(184, 90, 8, 2);  // Right x-eye
+                    DrawX(168, 90, 8, 2);  
+                    DrawX(184, 90, 8, 2); 
                 }
             }
 
-            // Body
             if (WrongGuesses >= 2)
                 DrawLine(180, 120, 180, 200, 3);
 
-            // Left arm
             if (WrongGuesses >= 3)
                 DrawLine(180, 140, 140, 170, 3);
 
-            // Right arm
             if (WrongGuesses >= 4)
                 DrawLine(180, 140, 220, 170, 3);
 
-            // Left leg
             if (WrongGuesses >= 5)
                 DrawLine(180, 200, 140, 250, 3);
 
-            // Right leg
             if (WrongGuesses >= 6)
                 DrawLine(180, 200, 220, 250, 3);
         }

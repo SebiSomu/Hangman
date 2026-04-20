@@ -17,9 +17,19 @@ namespace Hangman.Services
         {
             var allStats = LoadAll();
 
-            if (!allStats.TryGetValue(username, out var userStats))
+            // Find existing key with case-insensitive comparison
+            var existingKey = allStats.Keys.FirstOrDefault(k => 
+                k.Equals(username, StringComparison.OrdinalIgnoreCase));
+            
+            if (existingKey == null || !allStats.TryGetValue(existingKey, out var userStats))
             {
                 userStats = new UserStats();
+                allStats[username] = userStats;
+            }
+            else
+            {
+                // Use the existing key for updates
+                allStats.Remove(existingKey);
                 allStats[username] = userStats;
             }
 
@@ -45,23 +55,41 @@ namespace Hangman.Services
 
         public void DeleteUserStatistics(string username)
         {
-            if (!File.Exists(_statsFile)) return;
+            var path = GetStatsFilePath();
+            if (!File.Exists(path)) return;
             var allStats = LoadAll();
-            if (allStats.Remove(username))
+            
+            // Find the key with case-insensitive comparison
+            var existingKey = allStats.Keys.FirstOrDefault(k => 
+                k.Equals(username, StringComparison.OrdinalIgnoreCase));
+            
+            if (existingKey != null && allStats.Remove(existingKey))
             {
+                Persist(allStats);
+            }
+        }
+
+        public void RenameUsernameStatistics(string oldUsername, string newUsername)
+        {
+            var allStats = LoadAll();
+            
+            // Find the key with case-insensitive comparison
+            var existingKey = allStats.Keys.FirstOrDefault(k => 
+                k.Equals(oldUsername, StringComparison.OrdinalIgnoreCase));
+            
+            if (existingKey != null && allStats.TryGetValue(existingKey, out var userStats))
+            {
+                allStats.Remove(existingKey);
+                allStats[newUsername] = userStats;
                 Persist(allStats);
             }
         }
 
         public Dictionary<string, UserStats> GetAllStatistics() => LoadAll();
 
-        // ── Helpers ─────────────────────────────────────────────────────────
-
         private Dictionary<string, UserStats> LoadAll()
         {
-            var path = File.Exists(_statsFile)
-                ? _statsFile
-                : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _statsFile);
+            var path = GetStatsFilePath();
 
             if (!File.Exists(path)) return new Dictionary<string, UserStats>();
 
@@ -72,8 +100,18 @@ namespace Hangman.Services
 
         private void Persist(Dictionary<string, UserStats> data)
         {
+            var path = GetStatsFilePath();
             var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(_statsFile, json);
+            File.WriteAllText(path, json);
+        }
+
+        private string GetStatsFilePath()
+        {
+            if (File.Exists(_statsFile))
+                return _statsFile;
+            
+            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _statsFile);
+            return path;
         }
     }
 }

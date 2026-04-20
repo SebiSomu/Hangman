@@ -23,7 +23,6 @@ namespace Hangman.ViewModels
         public string? AvatarFileName => CurrentUser.AvatarFileName;
         public BitmapImage? AvatarImage => _avatarService.GetAvatarImage(CurrentUser.AvatarFileName);
 
-        // ── Commands ─────────────────────────────────────────────────────────
         public ICommand NewGameCommand { get; }
         public ICommand ContinueGameCommand { get; }
         public ICommand StatisticsCommand { get; }
@@ -31,7 +30,6 @@ namespace Hangman.ViewModels
         public ICommand DeleteAccountCommand { get; }
         public ICommand LogoutCommand { get; }
 
-        // ── Events ────────────────────────────────────────────────────────────
         public event EventHandler? LogoutRequested;
         public event EventHandler? NewGameRequested;
         public event EventHandler? ContinueGameRequested;

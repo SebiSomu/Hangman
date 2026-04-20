@@ -167,7 +167,7 @@
                             <materialDesign:PackIcon Kind="CogOutline" Width="48" Height="48" HorizontalAlignment="Center" Margin="0,0,0,12" Foreground="{StaticResource PrimaryColor}"/>
                             <TextBlock Text="Settings" FontSize="18" FontWeight="SemiBold" 
                                        Foreground="{StaticResource TextPrimaryColor}" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Change profile picture" FontSize="13" 
+                            <TextBlock Text="Edit profile" FontSize="13" 
                                        Foreground="{StaticResource TextSecondaryColor}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                         </StackPanel>
                     </Button>

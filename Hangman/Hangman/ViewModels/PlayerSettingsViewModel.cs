@@ -15,6 +15,7 @@ namespace Hangman.ViewModels
         private string? _avatarFileName;
         private BitmapImage? _avatarImage;
         private string _errorMessage = string.Empty;
+        private string _editableUsername;
 
         public User CurrentUser
         {
@@ -40,18 +41,26 @@ namespace Hangman.ViewModels
             set => SetProperty(ref _errorMessage, value);
         }
 
+        public string EditableUsername
+        {
+            get => _editableUsername;
+            set => SetProperty(ref _editableUsername, value);
+        }
+
         public ICommand ChangeImageCommand { get; }
         public ICommand SaveCommand { get; }
         public ICommand BackCommand { get; }
 
         public event EventHandler? SettingsSaved;
         public event EventHandler? BackRequested;
+        public event EventHandler<string>? UsernameChanged;
 
         public PlayerSettingsViewModel(User currentUser, IUserService userService, IAvatarService avatarService)
         {
             _currentUser = currentUser;
             _userService = userService;
             _avatarService = avatarService;
+            _editableUsername = currentUser.Username;
             AvatarFileName = currentUser.AvatarFileName;
             AvatarImage = _avatarService.GetAvatarImage(AvatarFileName);
 
@@ -78,12 +87,10 @@ namespace Hangman.ViewModels
             {
                 try
                 {
+                    var oldFileName = AvatarFileName;
                     var newFileName = _avatarService.SaveAvatar(openFileDialog.FileName, _currentUser.Username);
                     
-                    if (AvatarFileName != _currentUser.AvatarFileName)
-                    {
-                        _avatarService.DeleteAvatar(AvatarFileName);
-                    }
+                    _avatarService.DeleteAvatar(oldFileName);
 
                     AvatarFileName = newFileName;
                     AvatarImage = _avatarService.GetAvatarImage(newFileName);
@@ -102,7 +109,21 @@ namespace Hangman.ViewModels
                 _avatarService.DeleteAvatar(_currentUser.AvatarFileName);
             }
             CurrentUser.AvatarFileName = AvatarFileName;
-            _userService.UpdateUser(CurrentUser);
+
+            if (_currentUser.Username != EditableUsername)
+            {
+                if (!_userService.UpdateUsername(_currentUser.Username, EditableUsername))
+                {
+                    ErrorMessage = "Username already exists or is invalid";
+                    return;
+                }
+                CurrentUser.Username = EditableUsername;
+                UsernameChanged?.Invoke(this, EditableUsername);
+            }
+            else
+            {
+                _userService.UpdateUser(CurrentUser);
+            }
             SettingsSaved?.Invoke(this, EventArgs.Empty);
         }
     }

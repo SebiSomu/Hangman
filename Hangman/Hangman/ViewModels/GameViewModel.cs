@@ -109,12 +109,10 @@ namespace Hangman.ViewModels
 
             NotifyAllProperties();
 
-            // Build the A-Z letter button collection.
             LetterButtons = new ObservableCollection<LetterButtonViewModel>();
             for (char c = 'A'; c <= 'Z'; c++)
                 LetterButtons.Add(new LetterButtonViewModel(c));
 
-            // Restore already-guessed letters when loading a saved game.
             if (!string.IsNullOrEmpty(gameState.GuessedLetters))
             {
                 foreach (char c in gameState.GuessedLetters)
@@ -138,7 +136,6 @@ namespace Hangman.ViewModels
             SaveGameCommand = new RelayCommand(_ => SaveGame(), _ => IsGameActive);
             ExitGameCommand = new RelayCommand(_ => ExitGame());
 
-            // Subscribe to the timer tick event (SRP: we react, the service fires).
             _timerService.GameTimerTick += OnGameTimerTick;
             _timerService.StartGameTimer();
         }
@@ -178,7 +175,6 @@ namespace Hangman.ViewModels
 
             var isCorrect = GameState.GuessLetter(letter);
 
-            // Reset countdown on every guess.
             GameState.TimeRemaining = 30;
             OnPropertyChanged(nameof(TimerDisplay));
             OnPropertyChanged(nameof(GameState));
@@ -205,7 +201,6 @@ namespace Hangman.ViewModels
 
             if (GameState.CurrentLevel >= 3)
             {
-                // All 3 levels beaten — count as a won game.
                 if (GameState.SaveId.HasValue)
                     _saveGameService.DeleteSavedGame(GameState.SaveId.Value);
 

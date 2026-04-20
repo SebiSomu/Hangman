@@ -88,12 +88,22 @@
                     Command="{Binding ChangeImageCommand}"
                     Margin="0,0,0,20"/>
 
-            <!-- Username Display -->
-            <TextBlock Text="{Binding CurrentUser.Username, StringFormat='Username: {0}'}" 
-                       FontSize="18" FontWeight="SemiBold"
-                       Foreground="{StaticResource TextPrimaryColor}"
+            <!-- Username Edit -->
+            <TextBlock Text="Username:" 
+                       FontSize="14" 
+                       Foreground="{StaticResource TextSecondaryColor}"
                        HorizontalAlignment="Center"
-                       Margin="0,0,0,10"/>
+                       Margin="0,0,0,5"/>
+            <TextBox Text="{Binding EditableUsername, UpdateSourceTrigger=PropertyChanged}" 
+                     FontSize="16" FontWeight="SemiBold"
+                     Foreground="{StaticResource TextPrimaryColor}"
+                     HorizontalAlignment="Center"
+                     Width="250"
+                     Padding="10,8"
+                     BorderBrush="{StaticResource BorderColor}"
+                     BorderThickness="1"
+                     Background="White"
+                     Margin="0,0,0,10"/>
         </StackPanel>
 
         <!-- Buttons -->

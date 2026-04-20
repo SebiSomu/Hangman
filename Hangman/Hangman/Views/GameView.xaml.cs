@@ -20,13 +20,11 @@ namespace Hangman.Views
 
         private void UserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
         {
-            // Focus the control so keyboard input works
             Focus();
         }
 
         private void UserControl_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            // Keyboard shortcut: pressing A-Z keys triggers letter guess
             if (e.Key >= Key.A && e.Key <= Key.Z)
             {
                 char letter = (char)('A' + (e.Key - Key.A));

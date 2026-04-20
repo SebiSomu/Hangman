@@ -5,12 +5,6 @@ using Hangman.Services;
 
 namespace Hangman.ViewModels
 {
-    /// <summary>
-    /// ViewModel for category and word management.
-    ///
-    /// ISP after refactoring: depends on IWordService only — the narrowest contract
-    /// that covers everything this screen needs.
-    /// </summary>
     public class CategoriesManagementViewModel : ViewModelBase
     {
         private readonly IWordRepository _wordRepository;
@@ -18,8 +12,6 @@ namespace Hangman.ViewModels
         private CategoryViewModel? _selectedCategory;
         private string _newCategoryName = string.Empty;
         private string _newWord = string.Empty;
-
-        // ── Bindable collections & properties ────────────────────────────────
 
         public ObservableCollection<CategoryViewModel> Categories
         {
@@ -66,7 +58,6 @@ namespace Hangman.ViewModels
         public bool CanAddWord => SelectedCategory != null && !string.IsNullOrWhiteSpace(NewWord);
         public bool CanDeleteWord => SelectedCategory != null && SelectedCategory.SelectedWord != null;
 
-        // ── Commands ─────────────────────────────────────────────────────────
         public ICommand AddCategoryCommand { get; }
         public ICommand DeleteCategoryCommand { get; }
         public ICommand AddWordCommand { get; }
@@ -88,8 +79,6 @@ namespace Hangman.ViewModels
 
             LoadCategories();
         }
-
-        // ── Private methods ──────────────────────────────────────────────────
 
         private void LoadCategories()
         {
@@ -159,8 +148,6 @@ namespace Hangman.ViewModels
             SelectedCategory.SelectedWord = null;
         }
     }
-
-    // ── Supporting ViewModel ─────────────────────────────────────────────────
 
     public class CategoryViewModel : ViewModelBase
     {

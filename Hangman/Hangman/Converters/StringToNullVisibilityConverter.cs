@@ -10,8 +10,8 @@ namespace Hangman.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is string str && !string.IsNullOrEmpty(str))
-                return Visibility.Collapsed;  // Hide when has value
-            return Visibility.Visible;  // Show when null/empty
+                return Visibility.Collapsed;  
+            return Visibility.Visible;  
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

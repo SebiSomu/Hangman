@@ -1,9 +1,5 @@
 namespace Hangman.Models
 {
-    /// <summary>
-    /// Aggregated play statistics for a single user.
-    /// Moved out of GameService (SRP) — Models should own their own data shapes.
-    /// </summary>
     public class UserStats
     {
         public int TotalGamesPlayed { get; set; }
@@ -12,9 +8,6 @@ namespace Hangman.Models
         public List<CategoryStats> CategoryStats { get; set; } = new();
     }
 
-    /// <summary>
-    /// Per-category statistics for a user.
-    /// </summary>
     public class CategoryStats
     {
         public string Category { get; set; } = string.Empty;

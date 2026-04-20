@@ -71,7 +71,8 @@ namespace Hangman.ViewModels
 
         public MainViewModel()
         {
-            var userService = new UserService();
+            var statisticsService = new StatisticsService();
+            var userService = new UserService(statisticsService: statisticsService);
             var wordRepo = new WordRepository();
             var gameFactory = new GameFactory(wordRepo);
             
@@ -79,7 +80,7 @@ namespace Hangman.ViewModels
             _wordRepository = wordRepo;
             _gameFactory = gameFactory;
             _saveGameService = new SaveGameService();
-            _statisticsService = new StatisticsService();
+            _statisticsService = statisticsService;
             _avatarService = new AvatarService();
             _dialogService = new WpfDialogService(userService);
             _timerFactory = new GameTimerServiceFactory();
@@ -223,8 +224,11 @@ namespace Hangman.ViewModels
 
             vm.SettingsSaved += (_, _) =>
             {
-                CurrentUser = _userService.GetUser(CurrentUser!.Username);
                 ShowMainMenu();
+            };
+            vm.UsernameChanged += (_, newUsername) =>
+            {
+                CurrentUser = _userService.GetUser(newUsername);
             };
             vm.BackRequested += (_, _) => ShowMainMenu();
 

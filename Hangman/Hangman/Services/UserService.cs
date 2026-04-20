@@ -9,11 +9,13 @@ namespace Hangman.Services
     public class UserService : IUserService
     {
         private readonly string _usersFilePath;
+        private readonly IStatisticsService _statisticsService;
         private List<User> _users;
 
-        public UserService(string usersFilePath = "users.json")
+        public UserService(string usersFilePath = "users.json", IStatisticsService? statisticsService = null)
         {
             _usersFilePath = usersFilePath;
+            _statisticsService = statisticsService;
             _users = LoadUsers();
         }
 
@@ -64,6 +66,28 @@ namespace Hangman.Services
                 existing.Password = user.Password;
                 SaveUsers();
             }
+        }
+
+        public bool UpdateUsername(string oldUsername, string newUsername)
+        {
+            if (string.IsNullOrWhiteSpace(newUsername))
+                return false;
+
+            if (UserExists(newUsername))
+                return false;
+
+            var user = _users.FirstOrDefault(u =>
+                u.Username.Equals(oldUsername, System.StringComparison.OrdinalIgnoreCase));
+            
+            if (user == null)
+                return false;
+
+            user.Username = newUsername;
+            SaveUsers();
+            
+            _statisticsService?.RenameUsernameStatistics(oldUsername, newUsername);
+            
+            return true;
         }
 
         public void DeleteUser(string username)

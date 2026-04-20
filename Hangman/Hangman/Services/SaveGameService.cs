@@ -107,8 +107,6 @@ namespace Hangman.Services
             }
         }
 
-        // ── Helpers ─────────────────────────────────────────────────────────
-
         private Dictionary<string, List<GameSaveData>> LoadAllSavedGames()
         {
             if (!File.Exists(_saveGamesPath)) 

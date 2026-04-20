@@ -54,7 +54,6 @@ namespace Hangman.Services
             if (key != null && _categories.TryGetValue(key, out var words) && words.Count > 0)
                 return words[_random.Next(words.Count)];
 
-            // Fallback for compact category names (e.g. ProgrammingLanguages -> Programming Languages)
             var noSpace = categoryName.Replace(" ", "");
             key = _categories.Keys.FirstOrDefault(k => k.Replace(" ", "").Equals(noSpace, StringComparison.OrdinalIgnoreCase));
             if (key != null && _categories.TryGetValue(key, out words) && words.Count > 0)

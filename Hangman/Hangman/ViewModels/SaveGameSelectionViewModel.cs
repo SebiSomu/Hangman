@@ -31,7 +31,6 @@ namespace Hangman.ViewModels
             _onDelete = onDelete;
             SavedGames = new ObservableCollection<GameSaveData>(savedGames);
 
-            // Auto-select first item.
             _selectedSave = SavedGames.FirstOrDefault();
 
             LoadCommand = new RelayCommand(
@@ -62,8 +61,7 @@ namespace Hangman.ViewModels
             SavedGames.Remove(SelectedSave);
             SelectedSave = SavedGames.FirstOrDefault();
             OnPropertyChanged(nameof(HasSaves));
-
-            // Daca nu mai exista salvari, inchidem dialogul automat.
+  
             if (SavedGames.Count == 0)
                 CloseRequested?.Invoke(false);
         }

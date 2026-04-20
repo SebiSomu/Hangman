@@ -8,10 +8,7 @@ namespace Hangman.Services
         private DispatcherTimer? _transitionTimer;
         private DispatcherTimer? _feedbackTimer;
 
-        // Raised every second while the game countdown is running.
         public event EventHandler? GameTimerTick;
-
-        // ── Game countdown timer ─────────────────────────────────────────────
 
         public void StartGameTimer()
         {
@@ -26,14 +23,9 @@ namespace Hangman.Services
             _gameTimer?.Stop();
         }
 
-        // ── Level-transition timer ───────────────────────────────────────────
-
-        /// <summary>
-        /// Waits 3 seconds, then invokes <paramref name="callback"/> on the UI thread.
-        /// </summary>
         public void StartTransitionTimer(Action callback)
         {
-            _feedbackTimer?.Stop();      // dismiss any active feedback first
+            _feedbackTimer?.Stop();     
             _transitionTimer?.Stop();
 
             _transitionTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
@@ -47,11 +39,6 @@ namespace Hangman.Services
 
         public void StopTransitionTimer() => _transitionTimer?.Stop();
 
-        // ── Feedback display timer ───────────────────────────────────────────
-
-        /// <summary>
-        /// Waits 2 seconds, then invokes <paramref name="callback"/> (typically hides the feedback banner).
-        /// </summary>
         public void StartFeedbackTimer(Action callback)
         {
             _feedbackTimer?.Stop();
