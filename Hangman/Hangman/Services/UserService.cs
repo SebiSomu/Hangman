@@ -43,8 +43,20 @@ namespace Hangman.Services
 
         public bool ValidateUser(string username, string password)
         {
-            return _users.Any(u => u.Username.Equals(username, System.StringComparison.OrdinalIgnoreCase) 
-                                   && u.Password == password);
+            var user = _users.FirstOrDefault(u => u.Username.Equals(username, System.StringComparison.OrdinalIgnoreCase));
+            if (user == null) return false;
+
+            if (IsHashedPassword(user.Password))
+                return PasswordHasher.VerifyPassword(password, user.Password);
+
+            if (user.Password == password)
+            {
+                user.Password = PasswordHasher.HashPassword(password);
+                SaveUsers();
+                return true;
+            }
+
+            return false;
         }
 
         public User? GetUser(string username)
@@ -54,6 +66,7 @@ namespace Hangman.Services
 
         public void AddUser(User user)
         {
+            user.Password = PasswordHasher.HashPassword(user.Password);
             _users.Add(user);
             SaveUsers();
         }
@@ -65,8 +78,28 @@ namespace Hangman.Services
             if (existing != null)
             {
                 existing.AvatarFileName = user.AvatarFileName;
-                existing.Password = user.Password;
+                if (!IsHashedPassword(user.Password))
+                {
+                    existing.Password = PasswordHasher.HashPassword(user.Password);
+                }
+                else
+                {
+                    existing.Password = user.Password;
+                }
                 SaveUsers();
+            }
+        }
+
+        private bool IsHashedPassword(string password)
+        {
+            try
+            {
+                byte[] bytes = Convert.FromBase64String(password);
+                return bytes.Length == (16 + 32);
+            }
+            catch
+            {
+                return false;
             }
         }
 
