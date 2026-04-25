@@ -34,7 +34,7 @@ namespace Hangman.ViewModels
         public event EventHandler? NewGameRequested;
         public event EventHandler? ContinueGameRequested;
         public event EventHandler? StatisticsRequested;
-        public event EventHandler? PlayerSettingsRequested;
+        public event EventHandler? SettingsRequested;
 
         public MainMenuViewModel(
             User currentUser,
@@ -52,7 +52,7 @@ namespace Hangman.ViewModels
             NewGameCommand = new RelayCommand(_ => NewGameRequested?.Invoke(this, EventArgs.Empty));
             ContinueGameCommand = new RelayCommand(_ => ContinueGameRequested?.Invoke(this, EventArgs.Empty));
             StatisticsCommand = new RelayCommand(_ => StatisticsRequested?.Invoke(this, EventArgs.Empty));
-            PlayerSettingsCommand = new RelayCommand(_ => PlayerSettingsRequested?.Invoke(this, EventArgs.Empty));
+            PlayerSettingsCommand = new RelayCommand(_ => SettingsRequested?.Invoke(this, EventArgs.Empty));
             DeleteAccountCommand = new RelayCommand(_ => DeleteAccount());
             LogoutCommand = new RelayCommand(_ => LogoutRequested?.Invoke(this, EventArgs.Empty));
         }

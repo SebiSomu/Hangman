@@ -135,6 +135,12 @@ namespace Hangman.ViewModels
                 _ => ShowAbout());
         }
 
+        private void SetView(object view, object viewModel)
+        {
+            ((System.Windows.FrameworkElement)view).DataContext = viewModel;
+            CurrentView = view;
+        }
+
         private void ShowUserSelection()
         {
             IsMenuVisible = false;
@@ -147,8 +153,7 @@ namespace Hangman.ViewModels
             vm.PlayRequested     += (_, user) => ShowPasswordDialog(user);
             vm.CancelRequested   += (_, _) => Application.Current.Shutdown();
 
-            view.DataContext = vm;
-            CurrentView = view;
+            SetView(view, vm);
         }
 
         private void ShowSignUp()
@@ -159,8 +164,7 @@ namespace Hangman.ViewModels
             vm.SignUpSuccessful      += (_, _) => ShowUserSelection();
             vm.BackToLoginRequested  += (_, _) => ShowUserSelection();
 
-            view.DataContext = vm;
-            CurrentView = view;
+            SetView(view, vm);
         }
 
         private void ShowMainMenu()
@@ -175,11 +179,10 @@ namespace Hangman.ViewModels
             vm.LogoutRequested        += (_, _) => Logout();
             vm.NewGameRequested       += (_, _) => StartNewGame(SelectedCategory);
             vm.ContinueGameRequested  += (_, _) => ContinueSavedGame();
-            vm.PlayerSettingsRequested += (_, _) => ShowPlayerSettings();
+            vm.SettingsRequested      += (_, _) => ShowSettingsHub();
             vm.StatisticsRequested    += (_, _) => ShowStatistics();
 
-            view.DataContext = vm;
-            CurrentView = view;
+            SetView(view, vm);
         }
 
         private void ShowStatistics()
@@ -191,8 +194,7 @@ namespace Hangman.ViewModels
             var vm   = new StatisticsViewModel(_statisticsService);
             vm.BackRequested += (_, _) => ShowMainMenu();
 
-            view.DataContext = vm;
-            CurrentView = view;
+            SetView(view, vm);
         }
 
         private void ShowGame(GameState gameState)
@@ -211,30 +213,50 @@ namespace Hangman.ViewModels
             vm.GameExitRequested += (_, _) => ShowMainMenu();
 
             _currentGameViewModel = vm;
-            view.DataContext = vm;
-            CurrentView = view;
+            SetView(view, vm);
         }
 
-        private void ShowPlayerSettings()
+        private void ShowSettingsHub()
         {
             _currentGameViewModel?.StopTimer();
             _currentGameViewModel = null;
 
+            var view = new SettingsHubView();
+            var vm = new SettingsHubViewModel(CurrentUser!, _avatarService);
+
+            vm.EditProfileRequested += (_, _) => ShowPlayerSettings();
+            vm.EditWordRepositoryRequested += (_, _) => ShowWordRepository();
+            vm.BackRequested += (_, _) => ShowMainMenu();
+
+            SetView(view, vm);
+        }
+
+        private void ShowPlayerSettings()
+        {
             var view = new PlayerSettingsView();
             var vm   = new PlayerSettingsViewModel(CurrentUser!, _userService, _avatarService);
 
             vm.SettingsSaved += (_, _) =>
             {
-                ShowMainMenu();
+                ShowSettingsHub();
             };
             vm.UsernameChanged += (_, newUsername) =>
             {
                 CurrentUser = _userService.GetUser(newUsername);
             };
-            vm.BackRequested += (_, _) => ShowMainMenu();
+            vm.BackRequested += (_, _) => ShowSettingsHub();
 
-            view.DataContext = vm;
-            CurrentView = view;
+            SetView(view, vm);
+        }
+
+        private void ShowWordRepository()
+        {
+            var view = new CategoriesManagementView();
+            var vm = new CategoriesManagementViewModel(_wordRepository);
+
+            vm.BackRequested += (_, _) => ShowSettingsHub();
+
+            SetView(view, vm);
         }
 
         private void SelectCategory(object? param)
