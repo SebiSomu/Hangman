@@ -3,11 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:converters="clr-namespace:Hangman.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="900"
              Background="White">
     
     <UserControl.Resources>
+        <converters:ObjectToBooleanConverter x:Key="ObjectToBooleanConverter"/>
         <SolidColorBrush x:Key="PrimaryColor" Color="#6366F1"/>
         <SolidColorBrush x:Key="TextPrimaryColor" Color="#1F2937"/>
         <SolidColorBrush x:Key="TextSecondaryColor" Color="#6B7280"/>

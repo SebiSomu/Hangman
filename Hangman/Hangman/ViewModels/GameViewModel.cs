@@ -41,7 +41,7 @@ namespace Hangman.ViewModels
         private Brush _feedbackColor = Brushes.Transparent;
         private bool _showFeedback;
         private bool _isTransitioning;
-
+        private readonly HashSet<string> _usedWords = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public GameState GameState
         {
@@ -106,6 +106,7 @@ namespace Hangman.ViewModels
             _userService = userService;
             _avatarService = avatarService;
             _currentUser = currentUser;
+            _usedWords.Add(gameState.CurrentWord);
 
             NotifyAllProperties();
 
@@ -259,6 +260,7 @@ namespace Hangman.ViewModels
             GameState.TimeRemaining = 30;
             GameState.IsGameOver = false;
             GameState.IsWon = false;
+            _usedWords.Add(newWord);
 
             ResetLetterButtons();
             NotifyAllProperties();
@@ -296,9 +298,27 @@ namespace Hangman.ViewModels
 
         private string GetNextWord(string excludeWord)
         {
-            return GameState.Category == "All Categories"
-                ? _wordRepository.GetRandomWordFromAllCategoriesExcluding(excludeWord)
-                : _wordRepository.GetRandomWordExcluding(GameState.Category, excludeWord);
+            var availableWords = GameState.Category == "All Categories"
+                ? _wordRepository.GetAllCategoryNames()
+                    .SelectMany(cat => _wordRepository.GetWordsForCategory(cat))
+                    .Where(w => !_usedWords.Contains(w))
+                    .ToList()
+                : _wordRepository.GetWordsForCategory(GameState.Category)
+                    .Where(w => !_usedWords.Contains(w))
+                    .ToList();
+
+            if (availableWords.Count == 0)
+            {
+                _usedWords.Clear();
+                return GameState.Category == "All Categories"
+                    ? _wordRepository.GetRandomWordFromAllCategories()
+                    : _wordRepository.GetRandomWord(GameState.Category);
+            }
+
+            var random = new Random();
+            var newWord = availableWords[random.Next(availableWords.Count)];
+            _usedWords.Add(newWord);
+            return newWord;
         }
 
         private void ResetLetterButtons()

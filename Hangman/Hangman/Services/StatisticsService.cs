@@ -56,11 +56,38 @@ namespace Hangman.Services
             var path = GetStatsFilePath();
             if (!File.Exists(path)) return;
             var allStats = LoadAll();
-            
-            var existingKey = allStats.Keys.FirstOrDefault(k => 
+
+            var existingKey = allStats.Keys.FirstOrDefault(k =>
                 k.Equals(username, StringComparison.OrdinalIgnoreCase));
-            
+
             if (existingKey != null && allStats.Remove(existingKey))
+            {
+                Persist(allStats);
+            }
+        }
+
+        public void DeleteCategoryStatistics(string categoryName)
+        {
+            var allStats = LoadAll();
+            bool modified = false;
+
+            foreach (var userStats in allStats.Values)
+            {
+                var categoryStat = userStats.CategoryStats
+                    .FirstOrDefault(cs => cs.Category.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
+
+                if (categoryStat != null)
+                {
+                    userStats.CategoryStats.Remove(categoryStat);
+                    modified = true;
+
+                    userStats.TotalGamesPlayed = userStats.CategoryStats.Sum(cs => cs.GamesPlayed);
+                    userStats.GamesWon = userStats.CategoryStats.Sum(cs => cs.GamesWon);
+                    userStats.GamesLost = userStats.CategoryStats.Sum(cs => cs.GamesPlayed - cs.GamesWon);
+                }
+            }
+
+            if (modified)
             {
                 Persist(allStats);
             }

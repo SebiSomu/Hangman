@@ -9,6 +9,7 @@ namespace Hangman.Services
         List<GameSaveData> GetSavedGamesForUser(string username);
         void DeleteSavedGame(Guid saveId);
         void DeleteAllSavedGamesForUser(string username);
+        void DeleteSavedGamesForCategory(string categoryName);
         void RenameUsername(string oldUsername, string newUsername);
     }
 }

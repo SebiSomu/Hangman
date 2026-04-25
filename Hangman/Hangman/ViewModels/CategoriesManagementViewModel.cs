@@ -8,6 +8,8 @@ namespace Hangman.ViewModels
     public class CategoriesManagementViewModel : ViewModelBase
     {
         private readonly IWordRepository _wordRepository;
+        private readonly IStatisticsService _statisticsService;
+        private readonly ISaveGameService _saveGameService;
         private ObservableCollection<CategoryViewModel> _categories;
         private CategoryViewModel? _selectedCategory;
         private string _newCategoryName = string.Empty;
@@ -66,9 +68,11 @@ namespace Hangman.ViewModels
 
         public event EventHandler? BackRequested;
 
-        public CategoriesManagementViewModel(IWordRepository wordRepository)
+        public CategoriesManagementViewModel(IWordRepository wordRepository, IStatisticsService statisticsService, ISaveGameService saveGameService)
         {
             _wordRepository = wordRepository;
+            _statisticsService = statisticsService;
+            _saveGameService = saveGameService;
             _categories = new ObservableCollection<CategoryViewModel>();
 
             AddCategoryCommand = new RelayCommand(_ => AddCategory(), _ => CanAddCategory);
@@ -92,7 +96,7 @@ namespace Hangman.ViewModels
 
         private void AddCategory()
         {
-            var name = NewCategoryName.Trim().ToUpper();
+            var name = NewCategoryName.Trim();
             if (_wordRepository.AddCategory(name))
             {
                 Categories.Add(new CategoryViewModel(name, new List<string>()));
@@ -110,13 +114,15 @@ namespace Hangman.ViewModels
             if (SelectedCategory == null) return;
 
             var result = System.Windows.MessageBox.Show(
-                $"Are you sure you want to delete '{SelectedCategory.Name}' and all its words?",
+                $"Are you sure you want to delete '{SelectedCategory.Name}' and all its words?\n\nThis will also delete all statistics and saved games for this category for all users.",
                 "Confirm Delete",
                 System.Windows.MessageBoxButton.YesNo,
                 System.Windows.MessageBoxImage.Warning);
 
             if (result == System.Windows.MessageBoxResult.Yes)
             {
+                _statisticsService.DeleteCategoryStatistics(SelectedCategory.Name);
+                _saveGameService.DeleteSavedGamesForCategory(SelectedCategory.Name);
                 _wordRepository.DeleteCategory(SelectedCategory.Name);
                 Categories.Remove(SelectedCategory);
                 SelectedCategory = null;

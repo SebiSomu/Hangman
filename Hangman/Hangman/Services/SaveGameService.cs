@@ -114,6 +114,30 @@ namespace Hangman.Services
             }
         }
 
+        public void DeleteSavedGamesForCategory(string categoryName)
+        {
+            var allSaves = LoadAllSavedGames();
+            bool modified = false;
+
+            foreach (var userSaves in allSaves.Values)
+            {
+                var toRemove = userSaves
+                    .Where(g => g.Category.Equals(categoryName, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                foreach (var save in toRemove)
+                {
+                    userSaves.Remove(save);
+                    modified = true;
+                }
+            }
+
+            if (modified)
+            {
+                Persist(allSaves);
+            }
+        }
+
         public void RenameUsername(string oldUsername, string newUsername)
         {
             var allSaves = LoadAllSavedGames();

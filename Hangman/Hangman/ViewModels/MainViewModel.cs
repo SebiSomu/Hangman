@@ -252,11 +252,24 @@ namespace Hangman.ViewModels
         private void ShowWordRepository()
         {
             var view = new CategoriesManagementView();
-            var vm = new CategoriesManagementViewModel(_wordRepository);
+            var vm = new CategoriesManagementViewModel(_wordRepository, _statisticsService, _saveGameService);
 
-            vm.BackRequested += (_, _) => ShowSettingsHub();
+            vm.BackRequested += (_, _) =>
+            {
+                RefreshCategories();
+                ShowSettingsHub();
+            };
 
             SetView(view, vm);
+        }
+
+        private void RefreshCategories()
+        {
+            _categories.Clear();
+            foreach (var category in new[] { "All Categories" }.Concat(_wordRepository.GetAllCategoryNames()))
+            {
+                _categories.Add(category);
+            }
         }
 
         private void SelectCategory(object? param)
