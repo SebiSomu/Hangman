@@ -13,6 +13,7 @@ namespace Hangman.ViewModels
         private readonly IAvatarService _avatarService;
         private User _currentUser;
         private string? _avatarFileName;
+        private string? _tempAvatarFileName;
         private BitmapImage? _avatarImage;
         private string _errorMessage = string.Empty;
         private string _editableUsername;
@@ -27,6 +28,12 @@ namespace Hangman.ViewModels
         {
             get => _avatarFileName;
             set => SetProperty(ref _avatarFileName, value);
+        }
+
+        public string? TempAvatarFileName
+        {
+            get => _tempAvatarFileName;
+            set => SetProperty(ref _tempAvatarFileName, value);
         }
 
         public BitmapImage? AvatarImage
@@ -67,9 +74,9 @@ namespace Hangman.ViewModels
             ChangeImageCommand = new RelayCommand(_ => ChangeImage());
             SaveCommand = new RelayCommand(_ => SaveSettings());
             BackCommand = new RelayCommand(_ => {
-                if (AvatarFileName != _currentUser.AvatarFileName)
+                if (!string.IsNullOrEmpty(TempAvatarFileName))
                 {
-                    _avatarService.DeleteAvatar(AvatarFileName);
+                    _avatarService.DeleteTemporaryAvatar(TempAvatarFileName);
                 }
                 BackRequested?.Invoke(this, EventArgs.Empty);
             });
@@ -87,13 +94,15 @@ namespace Hangman.ViewModels
             {
                 try
                 {
-                    var oldFileName = AvatarFileName;
-                    var newFileName = _avatarService.SaveAvatar(openFileDialog.FileName, _currentUser.Username);
+                    if (!string.IsNullOrEmpty(TempAvatarFileName))
+                    {
+                        _avatarService.DeleteTemporaryAvatar(TempAvatarFileName);
+                    }
                     
-                    _avatarService.DeleteAvatar(oldFileName);
+                    var tempFileName = _avatarService.SaveTemporaryAvatar(openFileDialog.FileName, _currentUser.Username);
+                    TempAvatarFileName = tempFileName;
 
-                    AvatarFileName = newFileName;
-                    AvatarImage = _avatarService.GetAvatarImage(newFileName);
+                    AvatarImage = _avatarService.GetTemporaryAvatarImage(tempFileName);
                 }
                 catch (Exception ex)
                 {
@@ -104,11 +113,14 @@ namespace Hangman.ViewModels
 
         private void SaveSettings()
         {
-            if (_currentUser.AvatarFileName != AvatarFileName)
+            string? finalAvatarFileName = _currentUser.AvatarFileName;
+            if (!string.IsNullOrEmpty(TempAvatarFileName))
             {
                 _avatarService.DeleteAvatar(_currentUser.AvatarFileName);
+                finalAvatarFileName = _avatarService.CommitTemporaryAvatar(TempAvatarFileName, _currentUser.Username);
+                TempAvatarFileName = null;
             }
-            CurrentUser.AvatarFileName = AvatarFileName;
+            CurrentUser.AvatarFileName = finalAvatarFileName;
 
             if (_currentUser.Username != EditableUsername)
             {

@@ -167,7 +167,7 @@ namespace Hangman.ViewModels
             _currentGameViewModel = null;
 
             var view = new MainMenuView();
-            var vm   = new MainMenuViewModel(
+            var vm = new MainMenuViewModel(
                 CurrentUser!, _userService,
                 _saveGameService, _statisticsService, _avatarService);
 

@@ -17,7 +17,6 @@ namespace Hangman.Services
         {
             var allStats = LoadAll();
 
-            // Find existing key with case-insensitive comparison
             var existingKey = allStats.Keys.FirstOrDefault(k => 
                 k.Equals(username, StringComparison.OrdinalIgnoreCase));
             
@@ -28,7 +27,6 @@ namespace Hangman.Services
             }
             else
             {
-                // Use the existing key for updates
                 allStats.Remove(existingKey);
                 allStats[username] = userStats;
             }
@@ -59,7 +57,6 @@ namespace Hangman.Services
             if (!File.Exists(path)) return;
             var allStats = LoadAll();
             
-            // Find the key with case-insensitive comparison
             var existingKey = allStats.Keys.FirstOrDefault(k => 
                 k.Equals(username, StringComparison.OrdinalIgnoreCase));
             
@@ -73,7 +70,6 @@ namespace Hangman.Services
         {
             var allStats = LoadAll();
             
-            // Find the key with case-insensitive comparison
             var existingKey = allStats.Keys.FirstOrDefault(k => 
                 k.Equals(oldUsername, StringComparison.OrdinalIgnoreCase));
             

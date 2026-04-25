@@ -85,7 +85,14 @@ namespace Hangman.ViewModels
             _avatarService = avatarService;
             SignUpCommand = new RelayCommand(_ => SignUp(), _ => CanSignUp());
             SelectImageCommand = new RelayCommand(_ => SelectImage());
-            BackCommand = new RelayCommand(_ => BackToLoginRequested?.Invoke(this, EventArgs.Empty));
+            BackCommand = new RelayCommand(_ => {
+                if (!string.IsNullOrEmpty(AvatarFileName))
+                {
+                    _avatarService.DeleteAvatar(AvatarFileName);
+                    AvatarFileName = null;
+                }
+                BackToLoginRequested?.Invoke(this, EventArgs.Empty);
+            });
         }
 
         private bool CanSignUp()
@@ -107,6 +114,11 @@ namespace Hangman.ViewModels
             {
                 try
                 {
+                    if (!string.IsNullOrEmpty(AvatarFileName))
+                    {
+                        _avatarService.DeleteAvatar(AvatarFileName);
+                    }
+                    
                     var fileName = _avatarService.SaveAvatar(openFileDialog.FileName, Username);
                     AvatarFileName = fileName;
 
