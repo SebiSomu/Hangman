@@ -72,14 +72,15 @@ namespace Hangman.ViewModels
         public MainViewModel()
         {
             var statisticsService = new StatisticsService();
-            var userService = new UserService(statisticsService: statisticsService);
             var wordRepo = new WordRepository();
+            var saveGameService = new SaveGameService(wordRepository: wordRepo);
+            var userService = new UserService(statisticsService: statisticsService, saveGameService: saveGameService);
             var gameFactory = new GameFactory(wordRepo);
             
             _userService = userService;
             _wordRepository = wordRepo;
             _gameFactory = gameFactory;
-            _saveGameService = new SaveGameService();
+            _saveGameService = saveGameService;
             _statisticsService = statisticsService;
             _avatarService = new AvatarService();
             _dialogService = new WpfDialogService(userService);

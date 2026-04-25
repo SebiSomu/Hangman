@@ -35,10 +35,15 @@ namespace Hangman.Services
         {
             if (saveData == null) return null;
 
+            var wordCategory = string.IsNullOrEmpty(saveData.WordCategory) 
+                ? saveData.Category 
+                : saveData.WordCategory;
+            var word = _wordRepository.GetWordByIndex(wordCategory, saveData.WordIndex);
+
             return new GameState
             {
                 Username = saveData.Username,
-                CurrentWord = saveData.CurrentWord,
+                CurrentWord = word,
                 Category = saveData.Category,
                 GuessedLetters = saveData.GuessedLetters,
                 WrongGuesses = saveData.WrongGuesses,

@@ -95,6 +95,53 @@ namespace Hangman.Services
 
         public List<string> GetAllCategoryNames() => _categories.Keys.ToList();
 
+        public int GetWordIndex(string categoryName, string word)
+        {
+            var key = _categories.Keys.FirstOrDefault(k => k.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
+            if (key == null)
+            {
+                var noSpace = categoryName.Replace(" ", "");
+                key = _categories.Keys.FirstOrDefault(k => k.Replace(" ", "").Equals(noSpace, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (key != null && _categories.TryGetValue(key, out var words))
+            {
+                for (int i = 0; i < words.Count; i++)
+                {
+                    if (words[i].Equals(word, StringComparison.OrdinalIgnoreCase))
+                        return i;
+                }
+            }
+            return -1;
+        }
+
+        public string GetWordByIndex(string categoryName, int index)
+        {
+            var key = _categories.Keys.FirstOrDefault(k => k.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
+            if (key == null)
+            {
+                var noSpace = categoryName.Replace(" ", "");
+                key = _categories.Keys.FirstOrDefault(k => k.Replace(" ", "").Equals(noSpace, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (key != null && _categories.TryGetValue(key, out var words))
+            {
+                if (index >= 0 && index < words.Count)
+                    return words[index];
+            }
+            return "DEFAULT";
+        }
+
+        public string GetCategoryForWord(string word)
+        {
+            foreach (var category in _categories)
+            {
+                if (category.Value.Any(w => w.Equals(word, StringComparison.OrdinalIgnoreCase)))
+                    return category.Key;
+            }
+            return string.Empty;
+        }
+
         public List<string> GetWordsForCategory(string categoryName)
         {
             var key = _categories.Keys.FirstOrDefault(k => k.Equals(categoryName, StringComparison.OrdinalIgnoreCase));

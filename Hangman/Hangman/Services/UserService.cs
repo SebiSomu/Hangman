@@ -10,12 +10,14 @@ namespace Hangman.Services
     {
         private readonly string _usersFilePath;
         private readonly IStatisticsService _statisticsService;
+        private readonly ISaveGameService _saveGameService;
         private List<User> _users;
 
-        public UserService(string usersFilePath = "users.json", IStatisticsService? statisticsService = null)
+        public UserService(string usersFilePath = "users.json", IStatisticsService? statisticsService = null, ISaveGameService? saveGameService = null)
         {
             _usersFilePath = usersFilePath;
             _statisticsService = statisticsService;
+            _saveGameService = saveGameService;
             _users = LoadUsers();
         }
 
@@ -86,6 +88,7 @@ namespace Hangman.Services
             SaveUsers();
             
             _statisticsService?.RenameUsernameStatistics(oldUsername, newUsername);
+            _saveGameService?.RenameUsername(oldUsername, newUsername);
             
             return true;
         }

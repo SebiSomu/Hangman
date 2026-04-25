@@ -7,10 +7,12 @@ namespace Hangman.Services
     public class SaveGameService : ISaveGameService
     {
         private readonly string _saveGamesPath;
+        private readonly IWordRepository _wordRepository;
 
-        public SaveGameService(string saveGamesPath = "savedgames.json")
+        public SaveGameService(string saveGamesPath = "savedgames.json", IWordRepository? wordRepository = null)
         {
             _saveGamesPath = saveGamesPath;
+            _wordRepository = wordRepository ?? new WordRepository();
         }
 
         public Guid SaveGame(GameState gameState, string? saveName = null)
@@ -24,12 +26,16 @@ namespace Hangman.Services
                 allSaves[username] = userSaves;
             }
 
+            var actualWordCategory = _wordRepository.GetCategoryForWord(gameState.CurrentWord);
+            var wordIndex = _wordRepository.GetWordIndex(actualWordCategory, gameState.CurrentWord);
+
             if (gameState.SaveId.HasValue)
             {
                 var existing = userSaves.FirstOrDefault(g => g.SaveId == gameState.SaveId.Value);
                 if (existing != null)
                 {
-                    existing.CurrentWord = gameState.CurrentWord;
+                    existing.WordIndex = wordIndex;
+                    existing.WordCategory = actualWordCategory;
                     existing.GuessedLetters = gameState.GuessedLetters;
                     existing.WrongGuesses = gameState.WrongGuesses;
                     existing.CurrentLevel = gameState.CurrentLevel;
@@ -46,8 +52,9 @@ namespace Hangman.Services
                 SaveId = Guid.NewGuid(),
                 Username = username,
                 SaveName = saveName ?? $"Save {userSaves.Count + 1}",
-                CurrentWord = gameState.CurrentWord,
+                WordIndex = wordIndex,
                 Category = gameState.Category,
+                WordCategory = actualWordCategory,
                 GuessedLetters = gameState.GuessedLetters,
                 WrongGuesses = gameState.WrongGuesses,
                 CurrentLevel = gameState.CurrentLevel,
@@ -103,6 +110,21 @@ namespace Hangman.Services
             var allSaves = LoadAllSavedGames();
             if (allSaves.Remove(username))
             {
+                Persist(allSaves);
+            }
+        }
+
+        public void RenameUsername(string oldUsername, string newUsername)
+        {
+            var allSaves = LoadAllSavedGames();
+            if (allSaves.TryGetValue(oldUsername, out var userSaves))
+            {
+                allSaves.Remove(oldUsername);
+                foreach (var save in userSaves)
+                {
+                    save.Username = newUsername;
+                }
+                allSaves[newUsername] = userSaves;
                 Persist(allSaves);
             }
         }

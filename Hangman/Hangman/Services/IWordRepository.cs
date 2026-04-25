@@ -10,6 +10,9 @@ namespace Hangman.Services
         string GetRandomWordFromAllCategoriesExcluding(string excludeWord);
 
         List<string> GetAllCategoryNames();
+        int GetWordIndex(string categoryName, string word);
+        string GetWordByIndex(string categoryName, int index);
+        string GetCategoryForWord(string word);
         List<string> GetWordsForCategory(string categoryName);
         bool AddCategory(string name);
         bool DeleteCategory(string name);
