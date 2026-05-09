@@ -1,6 +1,6 @@
 # Hangman - A Modern WPF Implementation
 
-![Screenshot.png](file:///c:/Users/sebig/OneDrive/Documente/GitHub/Hangman/readme-images/Screenshot.png)
+![Screenshot.png](readme-images/Screenshot.png)
 
 This project is a high-fidelity desktop implementation of the classic "Hangman" game, engineered using .NET and Windows Presentation Foundation (WPF). It serves as a comprehensive showcase of modern software engineering practices, prioritizing clean architecture, maintainability, and a premium user experience.
 
